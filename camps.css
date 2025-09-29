@@ -1,11 +1,18 @@
-/* Dust Events Camps Styles */
+/* Dust Events Styles */
 
-.dust-camps-container {
+/* Container Styles */
+.dust-camps-container,
+.dust-art-container,
+.dust-schedule-container,
+.dust-music-container {
     margin: 20px 0;
 }
 
 /* Grid Layout */
-.dust-camps-grid {
+.dust-camps-grid,
+.dust-art-grid,
+.dust-schedule-grid,
+.dust-music-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
@@ -13,29 +20,43 @@
 }
 
 /* List Layout */
-.dust-camps-list {
+.dust-camps-list,
+.dust-art-list,
+.dust-schedule-list,
+.dust-music-list {
     display: flex;
     flex-direction: column;
     gap: 20px;
     margin: 20px 0;
 }
 
-.dust-camps-list .dust-camp-item {
+.dust-camps-list .dust-camps-item,
+.dust-art-list .dust-art-item,
+.dust-schedule-list .dust-schedule-item,
+.dust-music-list .dust-music-item {
     display: flex;
     gap: 20px;
     align-items: flex-start;
 }
 
-.dust-camps-list .dust-camp-image {
+.dust-camps-list .dust-camps-image,
+.dust-art-list .dust-art-image,
+.dust-schedule-list .dust-schedule-image {
     flex: 0 0 200px;
 }
 
-.dust-camps-list .dust-camp-content {
+.dust-camps-list .dust-camps-content,
+.dust-art-list .dust-art-content,
+.dust-schedule-list .dust-schedule-content,
+.dust-music-list .dust-music-content {
     flex: 1;
 }
 
-/* Camp Item */
-.dust-camp-item {
+/* Item Styles */
+.dust-camps-item,
+.dust-art-item,
+.dust-schedule-item,
+.dust-music-item {
     background: #fff;
     border: 1px solid #ddd;
     border-radius: 8px;
@@ -44,13 +65,18 @@
     transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
-.dust-camp-item:hover {
+.dust-camps-item:hover,
+.dust-art-item:hover,
+.dust-schedule-item:hover,
+.dust-music-item:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     transform: translateY(-2px);
 }
 
-/* Camp Image */
-.dust-camp-image {
+/* Image Styles */
+.dust-camps-image,
+.dust-art-image,
+.dust-schedule-image {
     width: 100%;
     height: 200px;
     overflow: hidden;
@@ -58,23 +84,33 @@
     position: relative;
 }
 
-.dust-camp-image img {
+.dust-camps-image img,
+.dust-art-image img,
+.dust-schedule-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.3s ease;
 }
 
-.dust-camp-item:hover .dust-camp-image img {
+.dust-camps-item:hover .dust-camps-image img,
+.dust-art-item:hover .dust-art-image img,
+.dust-schedule-item:hover .dust-schedule-image img {
     transform: scale(1.05);
 }
 
-/* Camp Content */
-.dust-camp-content {
+/* Content Styles */
+.dust-camps-content,
+.dust-art-content,
+.dust-schedule-content,
+.dust-music-content {
     padding: 20px;
 }
 
-.dust-camp-name {
+.dust-camps-name,
+.dust-art-name,
+.dust-schedule-title,
+.dust-music-title {
     margin: 0 0 15px 0;
     font-size: 1.4em;
     font-weight: 600;
@@ -82,23 +118,59 @@
     line-height: 1.3;
 }
 
-.dust-camp-description {
+.dust-camps-description,
+.dust-art-description,
+.dust-schedule-description {
     margin: 0 0 15px 0;
     color: #666;
     line-height: 1.6;
     font-size: 14px;
 }
 
-.dust-camp-description p {
+.dust-camps-description p,
+.dust-art-description p,
+.dust-schedule-description p {
     margin: 0 0 10px 0;
 }
 
-.dust-camp-description p:last-child {
+.dust-camps-description p:last-child,
+.dust-art-description p:last-child,
+.dust-schedule-description p:last-child {
     margin-bottom: 0;
 }
 
+/* Specific Content Styles */
+.dust-art-artist,
+.dust-schedule-camp,
+.dust-schedule-location,
+.dust-schedule-day,
+.dust-schedule-time,
+.dust-music-camp,
+.dust-music-location,
+.dust-music-day,
+.dust-music-who,
+.dust-music-time {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    color: #555;
+}
+
+.dust-art-artist strong,
+.dust-schedule-camp strong,
+.dust-schedule-location strong,
+.dust-schedule-day strong,
+.dust-schedule-time strong,
+.dust-music-camp strong,
+.dust-music-location strong,
+.dust-music-day strong,
+.dust-music-who strong,
+.dust-music-time strong {
+    color: #333;
+}
+
 /* Coordinates */
-.dust-camp-coordinates {
+.dust-camps-coordinates,
+.dust-art-coordinates {
     background: #f8f9fa;
     padding: 12px;
     border-radius: 5px;
@@ -107,78 +179,111 @@
     border-left: 3px solid #007cba;
 }
 
-.dust-camp-coordinates strong {
+.dust-camps-coordinates strong,
+.dust-art-coordinates strong {
     color: #333;
 }
 
-.dust-camp-map-link {
+.dust-camps-map-link,
+.dust-art-map-link {
     margin-top: 8px;
 }
 
-.dust-camp-map-link a {
+.dust-camps-map-link a,
+.dust-art-map-link a {
     color: #007cba;
     text-decoration: none;
     font-weight: 500;
     font-size: 12px;
 }
 
-.dust-camp-map-link a:hover {
+.dust-camps-map-link a:hover,
+.dust-art-map-link a:hover {
     text-decoration: underline;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .dust-camps-grid {
+    .dust-camps-grid,
+    .dust-art-grid,
+    .dust-schedule-grid,
+    .dust-music-grid {
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         gap: 15px;
     }
 
-    .dust-camps-list .dust-camp-item {
+    .dust-camps-list .dust-camps-item,
+    .dust-art-list .dust-art-item,
+    .dust-schedule-list .dust-schedule-item,
+    .dust-music-list .dust-music-item {
         flex-direction: column;
     }
 
-    .dust-camps-list .dust-camp-image {
+    .dust-camps-list .dust-camps-image,
+    .dust-art-list .dust-art-image,
+    .dust-schedule-list .dust-schedule-image {
         flex: none;
         width: 100%;
     }
 
-    .dust-camp-content {
+    .dust-camps-content,
+    .dust-art-content,
+    .dust-schedule-content,
+    .dust-music-content {
         padding: 15px;
     }
 
-    .dust-camp-name {
+    .dust-camps-name,
+    .dust-art-name,
+    .dust-schedule-title,
+    .dust-music-title {
         font-size: 1.2em;
     }
 }
 
 @media (max-width: 480px) {
-    .dust-camps-grid {
+    .dust-camps-grid,
+    .dust-art-grid,
+    .dust-schedule-grid,
+    .dust-music-grid {
         grid-template-columns: 1fr;
         gap: 12px;
     }
 
-    .dust-camp-image {
+    .dust-camps-image,
+    .dust-art-image,
+    .dust-schedule-image {
         height: 180px;
     }
 
-    .dust-camp-content {
+    .dust-camps-content,
+    .dust-art-content,
+    .dust-schedule-content,
+    .dust-music-content {
         padding: 12px;
     }
 
-    .dust-camp-coordinates {
+    .dust-camps-coordinates,
+    .dust-art-coordinates {
         padding: 10px;
         font-size: 12px;
     }
 }
 
 /* Loading States */
-.dust-camps-loading {
+.dust-camps-loading,
+.dust-art-loading,
+.dust-schedule-loading,
+.dust-music-loading {
     text-align: center;
     padding: 40px;
     color: #666;
 }
 
-.dust-camps-error {
+.dust-camps-error,
+.dust-art-error,
+.dust-schedule-error,
+.dust-music-error {
     background: #f8d7da;
     color: #721c24;
     padding: 15px;
@@ -188,7 +293,10 @@
 }
 
 /* No results */
-.dust-camps-no-results {
+.dust-camps-no-results,
+.dust-art-no-results,
+.dust-schedule-no-results,
+.dust-music-no-results {
     text-align: center;
     padding: 40px;
     color: #666;
@@ -198,14 +306,20 @@
 }
 
 /* Additional Utility Classes */
-.dust-camp-uid {
+.dust-camps-uid,
+.dust-art-uid,
+.dust-schedule-uid,
+.dust-music-uid {
     font-size: 11px;
     color: #999;
     font-family: monospace;
     margin-top: 5px;
 }
 
-.dust-camps-count {
+.dust-camps-count,
+.dust-art-count,
+.dust-schedule-count,
+.dust-music-count {
     margin-bottom: 15px;
     color: #666;
     font-size: 14px;
@@ -213,8 +327,14 @@
 
 /* Custom themes can override these variables */
 :root {
-    --dust-camp-primary-color: #007cba;
-    --dust-camp-border-color: #ddd;
-    --dust-camp-background: #fff;
-    --dust-camp-hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --dust-events-primary-color: #007cba;
+    --dust-events-border-color: #ddd;
+    --dust-events-background: #fff;
+    --dust-events-hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    
+    /* Backward compatibility */
+    --dust-camp-primary-color: var(--dust-events-primary-color);
+    --dust-camp-border-color: var(--dust-events-border-color);
+    --dust-camp-background: var(--dust-events-background);
+    --dust-camp-hover-shadow: var(--dust-events-hover-shadow);
 }
