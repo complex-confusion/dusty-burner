@@ -146,6 +146,7 @@ class DustEventsCamps {
 
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
+        uasort($data, [DustEventsCamps::class, 'sort_data']);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             return new WP_Error('json_error', 'Invalid JSON response');
@@ -155,6 +156,10 @@ class DustEventsCamps {
         set_transient($cache_key, $data, HOUR_IN_SECONDS);
 
         return $data;
+    }
+
+    private function sort_data($a, $b) {
+        return strcmp($a['name'], $b['name']);
     }
 
     /**
