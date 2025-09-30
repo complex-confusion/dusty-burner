@@ -128,6 +128,12 @@ class DustEvents {
      * @return array
      */
     public function get_data($type, $event_name = null) {
+        // Validate type parameter
+        $allowed_types = array('camps', 'art', 'schedule', 'music');
+        if (!in_array($type, $allowed_types, true)) {
+            return new WP_Error('invalid_type', 'Invalid API endpoint specified');
+        }
+
         if (!$event_name) {
             $event_name = get_option('dust_events_event_name');
         }
