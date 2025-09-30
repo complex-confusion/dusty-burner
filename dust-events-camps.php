@@ -225,17 +225,17 @@ class DustEvents {
         if (empty($description)) {
             return '';
         }
-        
+
         $paragraphs = explode("\n", trim($description));
         $formatted = '';
-        
+
         foreach ($paragraphs as $paragraph) {
             $paragraph = trim($paragraph);
             if (!empty($paragraph)) {
                 $formatted .= '<p>' . wp_kses_post($paragraph) . '</p>';
             }
         }
-        
+
         return $formatted;
     }
 
