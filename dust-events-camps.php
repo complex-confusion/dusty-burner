@@ -269,16 +269,16 @@ class DustEvents {
         }
 
         $paragraphs = explode("\n", trim($description));
-        $formatted = '';
+        $formatted_paragraphs = array();
 
         foreach ($paragraphs as $paragraph) {
             $paragraph = trim($paragraph);
             if (!empty($paragraph)) {
-                $formatted .= '<p>' . wp_kses_post($paragraph) . '</p>';
+                $formatted_paragraphs[] = '<p>' . wp_kses_post($paragraph) . '</p>';
             }
         }
 
-        return $formatted;
+        return implode('', $formatted_paragraphs);
     }
 
     /**
