@@ -28,7 +28,7 @@ class DustEvents {
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'settings_init'));
 
-        // AJAX handlers
+        // AJAX handlers - public read-only data
         add_action('wp_ajax_get_dust_data', array($this, 'ajax_get_data'));
         add_action('wp_ajax_nopriv_get_dust_data', array($this, 'ajax_get_data'));
     }
@@ -101,6 +101,9 @@ class DustEvents {
     }
 
     public function options_page() {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
         ?>
         <form action='options.php' method='post'>
             <h2>Dust Events Settings</h2>
