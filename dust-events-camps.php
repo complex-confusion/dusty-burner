@@ -543,13 +543,4 @@ function dust_display_data($type, $event_name = null, $options = array()) {
         $instance->render_data($data, $options, $type);
     }
 }
-
-// Backward compatibility
-function dust_get_camps($event_name = null) {
-    return dust_get_data('camps', $event_name);
-}
-
-function dust_display_camps($event_name = null, $options = array()) {
-    dust_display_data('camps', $event_name, $options);
-}
 ?>
