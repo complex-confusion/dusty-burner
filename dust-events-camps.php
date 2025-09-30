@@ -21,10 +21,10 @@ class DustEvents {
     public function __construct() {
         add_action('init', array($this, 'init'));
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
-        add_shortcode('dust_camps', array($this, 'display_shortcode'));
-        add_shortcode('dust_art', array($this, 'display_shortcode'));
-        add_shortcode('dust_schedule', array($this, 'display_shortcode'));
-        add_shortcode('dust_music', array($this, 'display_shortcode'));
+        add_shortcode('dust_camps', array($this, 'display_camps_shortcode'));
+        add_shortcode('dust_art', array($this, 'display_art_shortcode'));
+        add_shortcode('dust_schedule', array($this, 'display_schedule_shortcode'));
+        add_shortcode('dust_music', array($this, 'display_music_shortcode'));
 
         // Add admin menu for settings
         add_action('admin_menu', array($this, 'add_admin_menu'));
@@ -288,7 +288,26 @@ class DustEvents {
     }
 
     /**
-     * Shortcode to display data
+     * Shortcode handlers for each data type
+     */
+    public function display_camps_shortcode($atts, $content = null) {
+        return $this->display_shortcode($atts, $content, 'dust_camps', 'camps');
+    }
+
+    public function display_art_shortcode($atts, $content = null) {
+        return $this->display_shortcode($atts, $content, 'dust_art', 'art');
+    }
+
+    public function display_schedule_shortcode($atts, $content = null) {
+        return $this->display_shortcode($atts, $content, 'dust_schedule', 'schedule');
+    }
+
+    public function display_music_shortcode($atts, $content = null) {
+        return $this->display_shortcode($atts, $content, 'dust_music', 'music');
+    } }
+
+    /**
+     * Allow a shortcode to display data
      * Usage: [dust_camps], [dust_art], [dust_schedule], [dust_music]
      *
      * @param array $atts Shortcode attributes
@@ -296,9 +315,7 @@ class DustEvents {
      * @param string $tag Shortcode tag name
      * @return string HTML output
      */
-    public function display_shortcode($atts, $content = null, $tag = '') {
-        $type = str_replace('dust_', '', $tag);
-
+    private function display_shortcode($atts, $content = null, $tag = '', $type = '') {
         $atts = shortcode_atts(array(
             'event_name' => '',
             'layout' => 'grid',
