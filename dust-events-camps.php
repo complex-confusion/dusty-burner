@@ -210,6 +210,11 @@ class DustEvents {
             return null;
         }
 
+        // Check if already a complete URL
+        if (strpos($image_path, '://') !== false) {
+            return $image_path;
+        }
+
         return $this->image_base_url . $image_path;
     }
 
