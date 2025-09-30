@@ -36,18 +36,20 @@ class DustEvents {
     }
 
     public function init() {
-        // Register custom post types for caching (optional)
-        $types = array('camp', 'art', 'schedule', 'music');
-        foreach ($types as $type) {
-            register_post_type('dust_' . $type, array(
-                'labels' => array(
-                    'name' => 'Dust ' . ucfirst($type),
-                    'singular_name' => 'Dust ' . ucfirst($type)
-                ),
-                'public' => false,
-                'show_in_admin' => true,
-                'supports' => array('title', 'editor', 'thumbnail', 'custom-fields')
-            ));
+        // Register custom post types for caching only if needed
+        if (is_admin() || (defined('DOING_AJAX') && DOING_AJAX)) {
+            $types = array('camp', 'art', 'schedule', 'music');
+            foreach ($types as $type) {
+                register_post_type('dust_' . $type, array(
+                    'labels' => array(
+                        'name' => 'Dust ' . ucfirst($type),
+                        'singular_name' => 'Dust ' . ucfirst($type)
+                    ),
+                    'public' => false,
+                    'show_in_admin' => true,
+                    'supports' => array('title', 'editor', 'thumbnail', 'custom-fields')
+                ));
+            }
         }
     }
 
