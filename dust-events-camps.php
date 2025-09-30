@@ -115,7 +115,11 @@ class DustEvents {
 
     /**
      * Fetch data from API
-     */
+     *
+     * @param string $type 'camps'|'art'|'schedule'|'music'
+     * @param string|null $event_name
+     * @return array
+     */;
     public function get_data($type, $event_name = null) {
         if (!$event_name) {
             $event_name = get_option('dust_events_event_name');
@@ -166,6 +170,15 @@ class DustEvents {
         return $data;
     }
 
+    /**
+     * Sort data according to its type:
+     * camps and art get sorted by their name;
+     * schedule (events) and music get sorted by their camp and then their name
+     *
+     * @param array $data
+     * @param string $type 'camps'|'art'|'schedule'|'music'
+     * @return void
+     */
     private function sort_data(&$data, $type) {
         if ($type === 'camps' || $type === 'art') {
             // Sort by name
@@ -188,6 +201,9 @@ class DustEvents {
 
     /**
      * Parse pin coordinates
+     *
+     * @param string $pin_string
+     * @return array|null
      */
     private function parse_pin_coordinates($pin_string) {
         if (empty($pin_string)) {
@@ -204,13 +220,19 @@ class DustEvents {
 
     /**
      * Get complete image URL
+     *
+     * Converts relative image paths to absolute URLs by prepending the base URL.
+     * Prevents duplicate base URLs from caching or multiple processing
+     * by checking if the path is already a complete URL.
+     *
+     * @param string $image_path Relative path or complete URL
+     * @return string|null Complete image URL or null if empty
      */
     private function get_image_url($image_path) {
         if (empty($image_path)) {
             return null;
         }
 
-        // Check if already a complete URL
         if (strpos($image_path, '://') !== false) {
             return $image_path;
         }
@@ -220,6 +242,9 @@ class DustEvents {
 
     /**
      * Format description as paragraphs
+     *
+     * @param string $description
+     * @return string
      */
     private function format_description($description) {
         if (empty($description)) {
@@ -241,6 +266,8 @@ class DustEvents {
 
     /**
      * AJAX handler for getting data
+     *
+     * @return void
      */
     public function ajax_get_data() {
         check_ajax_referer('dust_events_nonce', 'nonce');
@@ -258,6 +285,11 @@ class DustEvents {
     /**
      * Shortcode to display data
      * Usage: [dust_camps], [dust_art], [dust_schedule], [dust_music]
+     *
+     * @param array $atts Shortcode attributes
+     * @param string|null $content Shortcode content
+     * @param string $tag Shortcode tag name
+     * @return string HTML output
      */
     public function display_shortcode($atts, $content = null, $tag = '') {
         $type = str_replace('dust_', '', $tag);
@@ -297,7 +329,12 @@ class DustEvents {
     }
 
     /**
-     * Render data HTML
+     * Output an entire list of Burn items as HTML
+     *
+     * @param array[] $data Array of item arrays
+     * @param array $options
+     * @param string $type 'camps'|'art'|'schedule'|'music'
+     * @return void
      */
     private function render_data($data, $options = array(), $type = 'camps') {
         $layout = isset($options['layout']) ? $options['layout'] : 'grid';
@@ -315,6 +352,12 @@ class DustEvents {
 
     /**
      * Render single item
+     *
+     * @param array $item
+     * @param boolean $show_coordinates
+     * @param boolean $show_images
+     * @param string $type
+     * @return void
      */
     private function render_single_item($item, $show_coordinates = true, $show_images = true, $type = 'camps') {
         $uid = esc_attr($item['uid']);
@@ -331,6 +374,15 @@ class DustEvents {
         echo '</div>';
     }
 
+    /**
+     * Output either camps or art as HTML
+     *
+     * @param array $item
+     * @param bool $show_coordinates
+     * @param bool $show_images
+     * @param string $type 'camps'|'art'
+     * @return void
+     */
     private function render_camps_art($item, $show_coordinates, $show_images, $type) {
         $name = esc_html($item['name']);
         $description = $this->format_description($item['description']);
@@ -376,6 +428,13 @@ class DustEvents {
         echo '</div>';
     }
 
+    /**
+     * Output schedule items (events) as HTML
+     *
+     * @param array $item
+     * @param bool $show_images
+     * @return void
+     */
     private function render_schedule($item, $show_images) {
         $title = esc_html($item['title']);
         $description = $this->format_description($item['description']);
@@ -409,6 +468,12 @@ class DustEvents {
         echo '</div>';
     }
 
+    /**
+     * Output Music items (musical events or "parties") as HTML
+     *
+     * @param array $item
+     * @return void
+     */
     private function render_music($item) {
         $title = esc_html($item['title']);
         $camp = isset($item['camp']) ? esc_html($item['camp']) : '';
@@ -434,7 +499,13 @@ class DustEvents {
     }
 
     /**
+     */
+    /**
      * Get data for use in themes/other plugins
+     *
+     * @param string $type 'camps'|'art'|'schedule'|'music'
+     * @param string|null $event_name
+     * @return array
      */
     public static function get_dust_data($type, $event_name = null) {
         $instance = new self();
@@ -446,10 +517,25 @@ class DustEvents {
 new DustEvents();
 
 // Template functions for theme developers
+
+/**
+ * For a theme: Get array of Burn items - camps, art, events, or music
+ * @param string $type 'camps'|'art'|'schedule'|'music'
+ * @param string|null $event_name
+ * @return array
+ */
 function dust_get_data($type, $event_name = null) {
     return DustEvents::get_dust_data($type, $event_name);
 }
 
+/**
+ * Output an entire list of Burn items as HTML
+ *
+ * @param array[] $data Array of item arrays
+ * @param array $options
+ * @param string $type 'camps'|'art'|'schedule'|'music'
+ * @return void
+ */
 function dust_display_data($type, $event_name = null, $options = array()) {
     $data = dust_get_data($type, $event_name);
     if (!is_wp_error($data) && !empty($data)) {
