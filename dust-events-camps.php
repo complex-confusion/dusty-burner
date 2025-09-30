@@ -124,7 +124,7 @@ class DustEvents {
      * @param string $type 'camps'|'art'|'schedule'|'music'
      * @param string|null $event_name
      * @return array
-     */;
+     */
     public function get_data($type, $event_name = null) {
         if (!$event_name) {
             $event_name = get_option('dust_events_event_name');
