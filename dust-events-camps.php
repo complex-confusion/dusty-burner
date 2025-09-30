@@ -4,6 +4,8 @@
  * Description: Display camps, art, schedule, and music from Dust Events API
  * Version: 2.0.0
  * Author: Complex Confusion
+ * License: GPL2
+ * Text Domain: dust-events-camps
  */
 
 // Prevent direct access
