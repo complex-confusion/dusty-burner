@@ -15,8 +15,8 @@ if (!defined('ABSPATH')) {
 
 class DustEvents {
 
-    private $api_base_url = 'https://data.dust.events/';
     private $image_base_url = 'https://data.dust.events/';
+    const API_BASE_URL = 'https://data.dust.events/';
 
     public function __construct() {
         add_action('init', array($this, 'init'));
@@ -127,7 +127,7 @@ class DustEvents {
      * @param string|null $event_name
      * @return array
      */
-    public function get_data($type, $event_name = null) {
+    public static function get_data($type, $event_name = null) {
         // Validate type parameter
         $allowed_types = array('camps', 'art', 'schedule', 'music');
         if (!in_array($type, $allowed_types, true)) {
@@ -142,7 +142,7 @@ class DustEvents {
             return new WP_Error('no_event_name', 'No event name configured');
         }
 
-        $api_url = $this->api_base_url . $event_name . '/' . $type . '.json';
+        $api_url = self::API_BASE_URL . $event_name . '/' . $type . '.json';
 
         // Check for cached data (cache for 1 hour)
         $cache_key = 'dust_' . $type . '_' . md5($event_name);
@@ -175,7 +175,7 @@ class DustEvents {
         }
 
         // Sort data based on type
-        $this->sort_data($data, $type);
+        self::sort_data($data, $type);
 
         // Cache the data
         set_transient($cache_key, $data, HOUR_IN_SECONDS);
@@ -192,7 +192,7 @@ class DustEvents {
      * @param string $type 'camps'|'art'|'schedule'|'music'
      * @return void
      */
-    private function sort_data(&$data, $type) {
+    private static function sort_data(&$data, $type) {
         if ($type === 'camps' || $type === 'art') {
             // Sort by name
             uasort($data, function($a, $b) {
@@ -290,7 +290,7 @@ class DustEvents {
         check_ajax_referer('dust_events_nonce', 'nonce');
 
         $type = sanitize_text_field($_POST['type']);
-        $data = $this->get_data($type);
+        $data = self::get_data($type);
 
         if (is_wp_error($data)) {
             wp_send_json_error($data->get_error_message());
@@ -342,7 +342,7 @@ class DustEvents {
             return '<p>Please configure the event name in the plugin settings.</p>';
         }
 
-        $data = $this->get_data($type, $event_name);
+        $data = self::get_data($type, $event_name);
 
         if (is_wp_error($data)) {
             return '<p>Error loading ' . $type . ' data: ' . esc_html($data->get_error_message()) . '</p>';
@@ -530,9 +530,6 @@ class DustEvents {
         }
         echo '</div>';
     }
-
-    /**
-     */
     /**
      * Get data for use in themes/other plugins
      *
@@ -541,8 +538,7 @@ class DustEvents {
      * @return array
      */
     public static function get_dust_data($type, $event_name = null) {
-        $instance = new self();
-        return $instance->get_data($type, $event_name);
+        return self::get_data($type, $event_name);
     }
 }
 
