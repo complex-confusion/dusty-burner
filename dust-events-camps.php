@@ -306,7 +306,7 @@ class DustEvents {
 
     public function display_music_shortcode($atts, $content = null) {
         return $this->display_shortcode($atts, $content, 'dust_music', 'music');
-    } }
+    }
 
     /**
      * Allow a shortcode to display data
