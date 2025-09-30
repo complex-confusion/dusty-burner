@@ -214,6 +214,27 @@ class DustEvents {
     }
 
     /**
+     * Format description as paragraphs
+     */
+    private function format_description($description) {
+        if (empty($description)) {
+            return '';
+        }
+        
+        $paragraphs = explode("\n", trim($description));
+        $formatted = '';
+        
+        foreach ($paragraphs as $paragraph) {
+            $paragraph = trim($paragraph);
+            if (!empty($paragraph)) {
+                $formatted .= '<p>' . wp_kses_post($paragraph) . '</p>';
+            }
+        }
+        
+        return $formatted;
+    }
+
+    /**
      * AJAX handler for getting data
      */
     public function ajax_get_data() {
@@ -307,7 +328,7 @@ class DustEvents {
 
     private function render_camps_art($item, $show_coordinates, $show_images, $type) {
         $name = esc_html($item['name']);
-        $description = wp_kses_post($item['description']);
+        $description = $this->format_description($item['description']);
 
         // Handle images differently for art vs camps
         $image_url = null;
@@ -352,7 +373,7 @@ class DustEvents {
 
     private function render_schedule($item, $show_images) {
         $title = esc_html($item['title']);
-        $description = wp_kses_post($item['description']);
+        $description = $this->format_description($item['description']);
         $camp = isset($item['camp']) ? esc_html($item['camp']) : '';
         $location = isset($item['location']) ? esc_html($item['location']) : '';
         $day = isset($item['day']) ? esc_html($item['day']) : '';

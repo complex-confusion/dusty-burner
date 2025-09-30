@@ -130,7 +130,7 @@
 .dust-camps-description p,
 .dust-art-description p,
 .dust-schedule-description p {
-    margin: 0 0 10px 0;
+    margin: 0 0 0.5em 0;
 }
 
 .dust-camps-description p:last-child,
@@ -204,6 +204,7 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+
     .dust-camps-grid,
     .dust-art-grid,
     .dust-schedule-grid,
@@ -242,6 +243,7 @@
 }
 
 @media (max-width: 480px) {
+
     .dust-camps-grid,
     .dust-art-grid,
     .dust-schedule-grid,
@@ -331,7 +333,7 @@
     --dust-events-border-color: #ddd;
     --dust-events-background: #fff;
     --dust-events-hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    
+
     /* Backward compatibility */
     --dust-camp-primary-color: var(--dust-events-primary-color);
     --dust-camp-border-color: var(--dust-events-border-color);
