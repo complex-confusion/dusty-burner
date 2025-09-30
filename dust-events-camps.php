@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
 
 class DustEvents {
 
-    private $image_base_url = 'https://data.dust.events/';
+    const IMAGE_BASE_URL = 'https://data.dust.events/';
     const API_BASE_URL = 'https://data.dust.events/';
 
     public function __construct() {
@@ -222,7 +222,7 @@ class DustEvents {
      * @param string $pin_string
      * @return array|null
      */
-    private function parse_pin_coordinates($pin_string) {
+    private static function parse_pin_coordinates($pin_string) {
         if (empty($pin_string)) {
             return null;
         }
@@ -245,7 +245,7 @@ class DustEvents {
      * @param string $image_path Relative path or complete URL
      * @return string|null Complete image URL or null if empty
      */
-    private function get_image_url($image_path) {
+    private static function get_image_url($image_path) {
         if (empty($image_path)) {
             return null;
         }
@@ -254,7 +254,7 @@ class DustEvents {
             return $image_path;
         }
 
-        return $this->image_base_url . $image_path;
+        return self::IMAGE_BASE_URL . $image_path;
     }
 
     /**
@@ -263,7 +263,7 @@ class DustEvents {
      * @param string $description
      * @return string
      */
-    private function format_description($description) {
+    private static function format_description($description) {
         if (empty($description)) {
             return '';
         }
@@ -358,7 +358,7 @@ class DustEvents {
         }
 
         ob_start();
-        $this->render_data($data, $atts, $type);
+        self::render_data($data, $atts, $type);
         return ob_get_clean();
     }
 
@@ -370,7 +370,7 @@ class DustEvents {
      * @param string $type 'camps'|'art'|'schedule'|'music'
      * @return void
      */
-    private function render_data($data, $options = array(), $type = 'camps') {
+    private static function render_data($data, $options = array(), $type = 'camps') {
         $layout = isset($options['layout']) ? $options['layout'] : 'grid';
         $show_coordinates = isset($options['show_coordinates']) && $options['show_coordinates'] === 'true';
         $show_images = isset($options['show_images']) && $options['show_images'] === 'true';
@@ -378,7 +378,7 @@ class DustEvents {
         echo '<div class="dust-' . esc_attr($type) . '-container dust-' . esc_attr($type) . '-' . esc_attr($layout) . '">';
 
         foreach ($data as $item) {
-            $this->render_single_item($item, $show_coordinates, $show_images, $type);
+            self::render_single_item($item, $show_coordinates, $show_images, $type);
         }
 
         echo '</div>';
@@ -393,15 +393,15 @@ class DustEvents {
      * @param string $type
      * @return void
      */
-    private function render_single_item($item, $show_coordinates = true, $show_images = true, $type = 'camps') {
+    private static function render_single_item($item, $show_coordinates = true, $show_images = true, $type = 'camps') {
         echo '<div class="dust-' . esc_attr($type) . '-item" data-uid="' . esc_attr($item['uid']) . '">';
 
         if ($type === 'camps' || $type === 'art') {
-            $this->render_camps_art($item, $show_coordinates, $show_images, $type);
+            self::render_camps_art($item, $show_coordinates, $show_images, $type);
         } elseif ($type === 'schedule') {
-            $this->render_schedule($item, $show_images);
+            self::render_schedule($item, $show_images);
         } elseif ($type === 'music') {
-            $this->render_music($item);
+            self::render_music($item);
         }
 
         echo '</div>';
@@ -416,9 +416,9 @@ class DustEvents {
      * @param string $type 'camps'|'art'
      * @return void
      */
-    private function render_camps_art($item, $show_coordinates, $show_images, $type) {
+    private static function render_camps_art($item, $show_coordinates, $show_images, $type) {
         $name = $item['name'];
-        $description = $this->format_description($item['description']);
+        $description = self::format_description($item['description']);
 
         // Handle images differently for art vs camps
         $image_url = null;
@@ -426,11 +426,11 @@ class DustEvents {
             if ($type === 'art' && isset($item['images']) && !empty($item['images'])) {
                 $image_url = $item['images'][0]['thumbnail_url'];
             } elseif (isset($item['imageUrl'])) {
-                $image_url = $this->get_image_url($item['imageUrl']);
+                $image_url = self::get_image_url($item['imageUrl']);
             }
         }
 
-        $pin_data = isset($item['pin']) ? $this->parse_pin_coordinates($item['pin']) : null;
+        $pin_data = isset($item['pin']) ? self::parse_pin_coordinates($item['pin']) : null;
 
         if ($image_url) {
             echo '<div class="dust-' . esc_attr($type) . '-image">';
@@ -468,15 +468,15 @@ class DustEvents {
      * @param bool $show_images
      * @return void
      */
-    private function render_schedule($item, $show_images) {
+    private static function render_schedule($item, $show_images) {
         $title = $item['title'];
-        $description = $this->format_description($item['description']);
+        $description = self::format_description($item['description']);
         $camp = isset($item['camp']) ? $item['camp'] : '';
         $location = isset($item['location']) ? $item['location'] : '';
         $day = isset($item['day']) ? $item['day'] : '';
         $occurrence = isset($item['occurrence']) ? $item['occurrence'] : array();
 
-        $image_url = $show_images && isset($item['imageUrl']) ? $this->get_image_url($item['imageUrl']) : null;
+        $image_url = $show_images && isset($item['imageUrl']) ? self::get_image_url($item['imageUrl']) : null;
 
         if ($image_url) {
             echo '<div class="dust-schedule-image">';
@@ -507,7 +507,7 @@ class DustEvents {
      * @param array $item
      * @return void
      */
-    private function render_music($item) {
+    private static function render_music($item) {
         $title = $item['title'];
         $camp = isset($item['camp']) ? $item['camp'] : '';
         $location = isset($item['location']) ? $item['location'] : '';
@@ -568,8 +568,7 @@ function dust_get_data($type, $event_name = null) {
 function dust_display_data($type, $event_name = null, $options = array()) {
     $data = dust_get_data($type, $event_name);
     if (!is_wp_error($data) && !empty($data)) {
-        $instance = new DustEvents();
-        $instance->render_data($data, $options, $type);
+        DustEvents::render_data($data, $options, $type);
     }
 }
 ?>
