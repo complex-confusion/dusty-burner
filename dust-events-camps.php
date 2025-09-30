@@ -196,16 +196,20 @@ class DustEvents {
         if ($type === 'camps' || $type === 'art') {
             // Sort by name
             uasort($data, function($a, $b) {
-                return strcmp($a['name'], $b['name']);
+                $name_a = (string)($a['name'] ?? '');
+                $name_b = (string)($b['name'] ?? '');
+                return strcmp($name_a, $name_b);
             });
         } elseif ($type === 'schedule' || $type === 'music') {
             // Sort by camp, then by title
             uasort($data, function($a, $b) {
-                $camp_a = isset($a['camp']) ? $a['camp'] : (isset($a['hosted_by_camp']) ? $a['hosted_by_camp'] : '');
-                $camp_b = isset($b['camp']) ? $b['camp'] : (isset($b['hosted_by_camp']) ? $b['hosted_by_camp'] : '');
+                $camp_a = (string)($a['camp'] ?? $a['hosted_by_camp'] ?? '');
+                $camp_b = (string)($b['camp'] ?? $b['hosted_by_camp'] ?? '');
                 $camp_cmp = strcmp($camp_a, $camp_b);
                 if ($camp_cmp === 0) {
-                    return strcmp($a['title'], $b['title']);
+                    $title_a = (string)($a['title'] ?? '');
+                    $title_b = (string)($b['title'] ?? '');
+                    return strcmp($title_a, $title_b);
                 }
                 return $camp_cmp;
             });
@@ -213,7 +217,7 @@ class DustEvents {
     }
 
     /**
-     * Parse pin coordinates
+     * Get location on the map as array of coordinates
      *
      * @param string $pin_string
      * @return array|null
