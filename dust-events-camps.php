@@ -360,8 +360,7 @@ class DustEvents {
      * @return void
      */
     private function render_single_item($item, $show_coordinates = true, $show_images = true, $type = 'camps') {
-        $uid = esc_attr($item['uid']);
-        echo '<div class="dust-' . $type . '-item" data-uid="' . $uid . '">';
+        echo '<div class="dust-' . esc_attr($type) . '-item" data-uid="' . esc_attr($item['uid']) . '">';
 
         if ($type === 'camps' || $type === 'art') {
             $this->render_camps_art($item, $show_coordinates, $show_images, $type);
@@ -384,14 +383,14 @@ class DustEvents {
      * @return void
      */
     private function render_camps_art($item, $show_coordinates, $show_images, $type) {
-        $name = esc_html($item['name']);
+        $name = $item['name'];
         $description = $this->format_description($item['description']);
 
         // Handle images differently for art vs camps
         $image_url = null;
         if ($show_images) {
             if ($type === 'art' && isset($item['images']) && !empty($item['images'])) {
-                $image_url = esc_url($item['images'][0]['thumbnail_url']);
+                $image_url = $item['images'][0]['thumbnail_url'];
             } elseif (isset($item['imageUrl'])) {
                 $image_url = $this->get_image_url($item['imageUrl']);
             }
@@ -400,24 +399,24 @@ class DustEvents {
         $pin_data = isset($item['pin']) ? $this->parse_pin_coordinates($item['pin']) : null;
 
         if ($image_url) {
-            echo '<div class="dust-' . $type . '-image">';
-            echo '<img src="' . $image_url . '" alt="' . esc_attr($name) . '" loading="lazy" />';
+            echo '<div class="dust-' . esc_attr($type) . '-image">';
+            echo '<img src="' . esc_url($image_url) . '" alt="' . esc_attr($name) . '" loading="lazy" />';
             echo '</div>';
         }
 
-        echo '<div class="dust-' . $type . '-content">';
-        echo '<h3 class="dust-' . $type . '-name">' . $name . '</h3>';
+        echo '<div class="dust-' . esc_attr($type) . '-content">';
+        echo '<h3 class="dust-' . esc_attr($type) . '-name">' . esc_html($name) . '</h3>';
 
         if ($type === 'art' && isset($item['artist'])) {
             echo '<div class="dust-art-artist"><strong>Artist:</strong> ' . esc_html($item['artist']) . '</div>';
         }
 
         if (!empty($description)) {
-            echo '<div class="dust-' . $type . '-description">' . $description . '</div>';
+            echo '<div class="dust-' . esc_attr($type) . '-description">' . $description . '</div>';
         }
 
         if ($show_coordinates && $pin_data) {
-            echo '<div class="dust-' . $type . '-coordinates"><strong>Coordinates:</strong> ';
+            echo '<div class="dust-' . esc_attr($type) . '-coordinates"><strong>Coordinates:</strong> ';
             if (isset($pin_data['lat'], $pin_data['lng'])) {
                 echo 'GPS - Lat: ' . esc_html($pin_data['lat']) . ', Lng: ' . esc_html($pin_data['lng']);
             } elseif (isset($pin_data['x'], $pin_data['y'])) {
@@ -436,11 +435,11 @@ class DustEvents {
      * @return void
      */
     private function render_schedule($item, $show_images) {
-        $title = esc_html($item['title']);
+        $title = $item['title'];
         $description = $this->format_description($item['description']);
-        $camp = isset($item['camp']) ? esc_html($item['camp']) : '';
-        $location = isset($item['location']) ? esc_html($item['location']) : '';
-        $day = isset($item['day']) ? esc_html($item['day']) : '';
+        $camp = isset($item['camp']) ? $item['camp'] : '';
+        $location = isset($item['location']) ? $item['location'] : '';
+        $day = isset($item['day']) ? $item['day'] : '';
         $occurrence = isset($item['occurrence']) ? $item['occurrence'] : array();
 
         $image_url = $show_images && isset($item['imageUrl']) ? $this->get_image_url($item['imageUrl']) : null;
@@ -452,11 +451,11 @@ class DustEvents {
         }
 
         echo '<div class="dust-schedule-content">';
-        echo '<h3 class="dust-schedule-title">' . $title . '</h3>';
+        echo '<h3 class="dust-schedule-title">' . esc_html($title) . '</h3>';
 
-        if ($camp) echo '<div class="dust-schedule-camp"><strong>Camp:</strong> ' . $camp . '</div>';
-        if ($location) echo '<div class="dust-schedule-location"><strong>Location:</strong> ' . $location . '</div>';
-        if ($day) echo '<div class="dust-schedule-day"><strong>Day:</strong> ' . $day . '</div>';
+        if ($camp) echo '<div class="dust-schedule-camp"><strong>Camp:</strong> ' . esc_html($camp) . '</div>';
+        if ($location) echo '<div class="dust-schedule-location"><strong>Location:</strong> ' . esc_html($location) . '</div>';
+        if ($day) echo '<div class="dust-schedule-day"><strong>Day:</strong> ' . esc_html($day) . '</div>';
 
         if (isset($occurrence['long'])) {
             echo '<div class="dust-schedule-time"><strong>Time:</strong> ' . esc_html($occurrence['long']) . '</div>';
@@ -475,18 +474,18 @@ class DustEvents {
      * @return void
      */
     private function render_music($item) {
-        $title = esc_html($item['title']);
-        $camp = isset($item['camp']) ? esc_html($item['camp']) : '';
-        $location = isset($item['location']) ? esc_html($item['location']) : '';
-        $day = isset($item['day']) ? esc_html($item['day']) : '';
+        $title = $item['title'];
+        $camp = isset($item['camp']) ? $item['camp'] : '';
+        $location = isset($item['location']) ? $item['location'] : '';
+        $day = isset($item['day']) ? $item['day'] : '';
         $occurrence = isset($item['occurrence']) ? $item['occurrence'] : array();
 
         echo '<div class="dust-music-content">';
-        echo '<h3 class="dust-music-title">' . $title . '</h3>';
+        echo '<h3 class="dust-music-title">' . esc_html($title) . '</h3>';
 
-        if ($camp) echo '<div class="dust-music-camp"><strong>Camp:</strong> ' . $camp . '</div>';
-        if ($location) echo '<div class="dust-music-location"><strong>Location:</strong> ' . $location . '</div>';
-        if ($day) echo '<div class="dust-music-day"><strong>Day:</strong> ' . $day . '</div>';
+        if ($camp) echo '<div class="dust-music-camp"><strong>Camp:</strong> ' . esc_html($camp) . '</div>';
+        if ($location) echo '<div class="dust-music-location"><strong>Location:</strong> ' . esc_html($location) . '</div>';
+        if ($day) echo '<div class="dust-music-day"><strong>Day:</strong> ' . esc_html($day) . '</div>';
 
         if (isset($occurrence['who'])) {
             echo '<div class="dust-music-who"><strong>Artist:</strong> ' . esc_html($occurrence['who']) . '</div>';
