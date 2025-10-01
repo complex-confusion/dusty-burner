@@ -27,6 +27,7 @@ class DisplayDustData {
         add_shortcode('dust_art', array($this, 'display_art_shortcode'));
         add_shortcode('dust_schedule', array($this, 'display_schedule_shortcode'));
         add_shortcode('dust_music', array($this, 'display_music_shortcode'));
+        add_shortcode('dust_schedule_ics_button', array($this, 'display_ics_button_shortcode'));
 
         // Add admin menu for settings
         add_action('admin_menu', array($this, 'add_admin_menu'));
@@ -321,6 +322,18 @@ class DisplayDustData {
 
     public function display_music_shortcode($atts, $content = null) {
         return $this->display_shortcode($atts, $content, 'dust_music', 'music');
+    }
+
+    /**
+     * Shortcode for ICS export button
+     */
+    public function display_ics_button_shortcode($atts, $content = null) {
+        $atts = shortcode_atts(array(
+            'text' => '📅 Export to Calendar',
+            'event_name' => ''
+        ), $atts, 'dust_schedule_ics_button');
+
+        return self::render_ics_button($atts['text'], $atts['event_name']);
     }
 
     /**
@@ -659,6 +672,20 @@ class DisplayDustData {
     }
 
     /**
+     * Render ICS export button
+     *
+     * @param string $text Button text
+     * @param string $event_name Event name
+     * @return string HTML button
+     */
+    public static function render_ics_button($text = '📅 Export to Calendar', $event_name = '') {
+        $button_text = esc_html($text);
+        $data_event = !empty($event_name) ? ' data-event="' . esc_attr($event_name) . '"' : '';
+
+        return '<button class="dust-ics-export-btn"' . $data_event . '>' . $button_text . '</button>';
+    }
+
+    /**
      * Get data for use in themes/other plugins
      *
      * @param string $type 'camps'|'art'|'schedule'|'music'
@@ -698,4 +725,15 @@ function lunacode_display_dust_data_render($type, $event_name = null, $options =
     if (!is_wp_error($data) && !empty($data)) {
         \LunaCode\DisplayDustData::render_data($data, $options, $type);
     }
+}
+
+/**
+ * Render ICS export button
+ *
+ * @param string $text Button text
+ * @param string $event_name Event name
+ * @return string HTML button
+ */
+function dust_schedule_ics_button($text = '📅 Export to Calendar', $event_name = '') {
+    return \LunaCode\DisplayDustData::render_ics_button($text, $event_name);
 }
