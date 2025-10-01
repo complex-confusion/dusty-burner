@@ -328,7 +328,7 @@ class DisplayDustData {
      */
     public function display_ics_button_shortcode($atts, $content = null) {
         $atts = shortcode_atts(array(
-            'text' => '📅 Export Schedule to Calendar',
+            'text' => '',
             'event_name' => ''
         ), $atts, 'dust_schedule_ics_button');
 
@@ -379,7 +379,7 @@ class DisplayDustData {
 
         // Show export button for schedule if requested
         if ($type === 'schedule' && $atts['show_export_button'] === 'true') {
-            echo self::render_ics_button($event_name);
+            echo self::render_ics_button();
         }
 
         self::render_data($data, $atts, $type);
@@ -681,19 +681,17 @@ class DisplayDustData {
      * Render ICS export button
      *
      * @param string $event_name Event name
-     * @param string $text Button text
+     * @param string|null $text Button text
      * @return string HTML button
      */
-    public static function render_ics_button($event_name = '', $text = '📅 Export Schedule to Calendar') {
-        // If no event_name provided, use the configured default
-        if (empty($event_name)) {
-            $event_name = get_option('dust_events_event_name');
-        }
+    public static function render_ics_button($event_name = '', $text = '' ) {
+        $event_name = $event_name ?: get_option('dust_events_event_name');
+        $text = $text ?: '📅 Export Schedule to Calendar';
+
         $escaped = array(
             'event_name' => esc_attr($event_name),
             'text' => \esc_html($text),
         );
-
         return "<button class=\"dust-ics-export-btn\" data-event=\"{$escaped['event_name']}\">{$escaped['text']}</button>";
     }
 
@@ -746,6 +744,6 @@ function lunacode_display_dust_data_render($type, $event_name = null, $options =
  * @param string $text Button text
  * @return string HTML button
  */
-function dust_schedule_ics_button($event_name = '', $text = '📅 Export Schedule to Calendar') {
+function dust_schedule_ics_button($event_name = '', $text = '') {
     return \LunaCode\DisplayDustData::render_ics_button($event_name, $text);
 }
