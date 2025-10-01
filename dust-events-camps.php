@@ -33,6 +33,8 @@ class DustEvents {
         // AJAX handlers - public read-only data
         add_action('wp_ajax_get_dust_data', array($this, 'ajax_get_data'));
         add_action('wp_ajax_nopriv_get_dust_data', array($this, 'ajax_get_data'));
+        add_action('wp_ajax_export_schedule_ics', array($this, 'export_schedule_ics'));
+        add_action('wp_ajax_nopriv_export_schedule_ics', array($this, 'export_schedule_ics'));
     }
 
     public function init() {
@@ -56,6 +58,7 @@ class DustEvents {
     public function enqueue_scripts() {
         wp_enqueue_script('jquery');
         wp_enqueue_script('dust-events-js', plugin_dir_url(__FILE__) . 'camps.js', array('jquery'), '2.0.0', true);
+        wp_enqueue_script('dust-ics-export', plugin_dir_url(__FILE__) . 'schedule-ics-button.js', array('jquery'), '2.0.0', true);
         wp_enqueue_style('dust-events-css', plugin_dir_url(__FILE__) . 'camps.css', array(), '2.0.0');
 
         // Localize script for AJAX
@@ -530,6 +533,85 @@ class DustEvents {
         }
         echo '</div>';
     }
+    /**
+     * Export schedule as ICS file
+     */
+    public function export_schedule_ics() {
+        check_ajax_referer('dust_events_nonce', 'nonce');
+        
+        $event_name = sanitize_text_field($_POST['event_name'] ?? get_option('dust_events_event_name'));
+        $data = self::get_data('schedule', $event_name);
+        
+        if (is_wp_error($data)) {
+            wp_die('Error loading schedule data');
+        }
+        
+        $ics_content = $this->generate_ics($data, $event_name);
+        
+        header('Content-Type: text/calendar; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $event_name . '-schedule.ics"');
+        echo $ics_content;
+        wp_die();
+    }
+
+    private function generate_ics($schedule_data, $event_name) {
+        $ics = "BEGIN:VCALENDAR\r\n";
+        $ics .= "VERSION:2.0\r\n";
+        $ics .= "PRODID:-//Dust Events//Schedule Export//EN\r\n";
+        $ics .= "CALSCALE:GREGORIAN\r\n";
+        
+        foreach ($schedule_data as $event) {
+            $ics .= "BEGIN:VEVENT\r\n";
+            $ics .= "UID:" . ($event['uid'] ?? uniqid()) . "@dust.events\r\n";
+            $ics .= "SUMMARY:" . $this->escape_ics($event['title'] ?? '') . "\r\n";
+            
+            if (!empty($event['description'])) {
+                $ics .= "DESCRIPTION:" . $this->escape_ics($event['description']) . "\r\n";
+            }
+            
+            if (!empty($event['location'])) {
+                $ics .= "LOCATION:" . $this->escape_ics($event['location']) . "\r\n";
+            }
+            
+            // Handle Dust Events time format
+            $start_time = $this->parse_dust_time($event);
+            $end_time = $this->parse_dust_end_time($event);
+            
+            if ($start_time) {
+                $ics .= "DTSTART:" . $start_time . "\r\n";
+                if ($end_time) {
+                    $ics .= "DTEND:" . $end_time . "\r\n";
+                } else {
+                    // Default 1 hour duration if no end time
+                    $ics .= "DTEND:" . date('Ymd\THis\Z', strtotime($start_time) + 3600) . "\r\n";
+                }
+            }
+            
+            $ics .= "END:VEVENT\r\n";
+        }
+        
+        $ics .= "END:VCALENDAR\r\n";
+        return $ics;
+    }
+
+    private function parse_dust_time($event) {
+        if (isset($event['occurrence']['start_time'])) {
+            return date('Ymd\THis\Z', strtotime($event['occurrence']['start_time']));
+        }
+        return null;
+    }
+
+    private function parse_dust_end_time($event) {
+        if (isset($event['occurrence']['end_time'])) {
+            return date('Ymd\THis\Z', strtotime($event['occurrence']['end_time']));
+        }
+        return null;
+    }
+
+    private function escape_ics($text) {
+        return str_replace(["\n", "\r", ",", ";"], ["\\n", "", "\\,", "\\;"], strip_tags($text));
+    }
+
     /**
      * Get data for use in themes/other plugins
      *
