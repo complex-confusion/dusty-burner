@@ -14,7 +14,7 @@
 </div>
 
 <!-- Or manually add the button: -->
-<button id="manual-ics-export" class="dust-ics-export-btn">📅 Export Schedule to Calendar</button>
+<button id="manual-ics-export" class="dust-ics-export-btn">📅 Export to Calendar</button>
 
 <script>
 jQuery(document).ready(function($) {
@@ -38,7 +38,7 @@ jQuery(document).ready(function($) {
         form.remove();
 
         setTimeout(function() {
-            $btn.prop('disabled', false).text('📅 Export Schedule to Calendar');
+            $btn.prop('disabled', false).text('📅 Export to Calendar');
         }, 1000);
     });
 });

@@ -414,12 +414,12 @@
     display: block;
 }
 
-.dust-schedule-export-button {
+.lunacode-export-buttons {
     text-align: right;
     margin-bottom: 15px;
 }
 
-.dust-schedule-export-button .dust-ics-export-btn {
+.lunacode-export-buttons .dust-ics-export-btn {
     margin: 0;
 }
 
@@ -427,12 +427,12 @@
     .dust-schedule-tab-nav {
         flex-direction: column;
     }
-    
+
     .dust-schedule-tab-btn {
         text-align: left;
         border-radius: 4px;
     }
-    
+
     .dust-schedule-display-toggle {
         flex-direction: column;
     }

@@ -46,6 +46,7 @@ class DisplayDustData {
         add_shortcode('dust_schedule', array($this, 'display_schedule_shortcode'));
         add_shortcode('dust_music', array($this, 'display_music_shortcode'));
         add_shortcode('dust_schedule_ics_button', array($this, 'display_ics_button_shortcode'));
+        add_shortcode('dust_schedule_csv_button', array($this, 'display_csv_button_shortcode'));
 
         // Add admin menu for settings
         add_action('admin_menu', array($this, 'add_admin_menu'));
@@ -56,6 +57,8 @@ class DisplayDustData {
         add_action('wp_ajax_nopriv_get_dust_data', array($this, 'ajax_get_data'));
         add_action('wp_ajax_export_schedule_ics', array($this, 'export_schedule_ics'));
         add_action('wp_ajax_nopriv_export_schedule_ics', array($this, 'export_schedule_ics'));
+        add_action('wp_ajax_export_schedule_csv', array($this, 'export_schedule_csv'));
+        add_action('wp_ajax_nopriv_export_schedule_csv', array($this, 'export_schedule_csv'));
     }
 
     public function init() {
@@ -355,6 +358,18 @@ class DisplayDustData {
     }
 
     /**
+     * Shortcode for CSV export button
+     */
+    public function display_csv_button_shortcode($atts, $content = null) {
+        $atts = shortcode_atts(array(
+            'text' => '',
+            'event_name' => ''
+        ), $atts, 'dust_schedule_csv_button');
+
+        return self::render_csv_button($atts['event_name'], $atts['text']);
+    }
+
+    /**
      * Allow a shortcode to display data
      * Usage: [dust_camps], [dust_art], [dust_schedule], [dust_music]
      *
@@ -370,9 +385,15 @@ class DisplayDustData {
             'show_coordinates' => 'true',
             'per_page' => -1,
             'show_images' => 'true',
-            'show_export_button' => 'false',
+            'show_export_buttons' => 'false',
+            'show_export_button' => 'false', // backwards compatibility
             'display' => 'false'
         ), $atts, $tag);
+
+        // Backwards compatibility: if old parameter is used, use it
+        if ($atts['show_export_button'] === 'true' && $atts['show_export_buttons'] === 'false') {
+            $atts['show_export_buttons'] = 'true';
+        }
 
         $event_name = !empty($atts['event_name']) ? $atts['event_name'] : get_option('dust_events_event_name');
 
@@ -400,9 +421,9 @@ class DisplayDustData {
         if ($type === 'schedule' && $atts['display'] === 'tabs') {
             self::render_schedule_tabs($data, $atts, $event_name);
         } else {
-            // Show export button for schedule if requested
-            if ($type === 'schedule' && $atts['show_export_button'] === 'true') {
-                echo self::render_ics_button();
+            // Show export buttons for schedule if requested
+            if ($type === 'schedule' && $atts['show_export_buttons'] === 'true') {
+                echo '<div class="lunacode-export-buttons">' . self::render_ics_button() . ' ' . self::render_csv_button() . '</div>';
             }
             self::render_data($data, $atts, $type);
         }
@@ -517,14 +538,14 @@ class DisplayDustData {
     private static function render_schedule_tabs($data, $options, $event_name) {
         $tabs = self::organize_schedule_by_days($data);
         $container_id = 'dust-schedule-tabs-' . uniqid();
-        
+
         echo '<div class="dust-schedule-tabs-container" id="' . esc_attr($container_id) . '" data-event="' . esc_attr($event_name) . '">';
-        
-        // Export button if requested
-        if (isset($options['show_export_button']) && $options['show_export_button'] === 'true') {
-            echo '<div class="dust-schedule-export-button">' . self::render_ics_button($event_name) . '</div>';
+
+        // Export buttons if requested
+        if (isset($options['show_export_buttons']) && $options['show_export_buttons'] === 'true') {
+            echo '<div class="lunacode-export-buttons">' . self::render_ics_button($event_name) . ' ' . self::render_csv_button($event_name) . '</div>';
         }
-        
+
         // Tab navigation
         echo '<div class="dust-schedule-tab-nav">';
         $first = true;
@@ -534,7 +555,7 @@ class DisplayDustData {
             $first = false;
         }
         echo '</div>';
-        
+
         // Tab content
         echo '<div class="dust-schedule-tab-content">';
         $first = true;
@@ -547,10 +568,10 @@ class DisplayDustData {
             $first = false;
         }
         echo '</div>';
-        
+
         echo '</div>';
     }
-    
+
     /**
      * Organize schedule data by days
      */
@@ -559,12 +580,12 @@ class DisplayDustData {
         $everyday_events = array();
         $day_events = array();
         $title_day_count = array();
-        
+
         // First pass: count how many different days each event title appears on
         foreach ($data as $event) {
             $title = $event['title'] ?? '';
             $day = $event['day'] ?? '';
-            
+
             if (!empty($title) && !empty($day)) {
                 if (!isset($title_day_count[$title])) {
                     $title_day_count[$title] = array();
@@ -572,36 +593,36 @@ class DisplayDustData {
                 $title_day_count[$title][$day] = true;
             }
         }
-        
+
         // Second pass: categorize events
         foreach ($data as $event) {
             $title = $event['title'] ?? '';
             $day = $event['day'] ?? '';
-            
+
             // Check if it's an everyday event (appears on 3+ different days or has daily keywords)
             $is_everyday = false;
             if (!empty($title)) {
                 $daily_keywords = array('daily', 'every day', 'everyday', 'all days');
                 $title_lower = strtolower($title);
                 $desc_lower = strtolower($event['description'] ?? '');
-                
+
                 foreach ($daily_keywords as $keyword) {
                     if (strpos($title_lower, $keyword) !== false || strpos($desc_lower, $keyword) !== false) {
                         $is_everyday = true;
                         break;
                     }
                 }
-                
+
                 // Also check if this title appears on 2+ different days (multi-day events)
                 if (!$is_everyday && isset($title_day_count[$title]) && count($title_day_count[$title]) >= 2) {
                     $is_everyday = true;
                 }
             }
-            
+
             if ($is_everyday) {
                 $everyday_events[] = $event;
             }
-            
+
             if (!empty($day)) {
                 if (!isset($day_events[$day])) {
                     $day_events[$day] = array();
@@ -609,7 +630,7 @@ class DisplayDustData {
                 $day_events[$day][] = $event;
             }
         }
-        
+
         // Add "Repeating" tab if there are everyday events
         if (!empty($everyday_events)) {
             $tabs['repeating'] = array(
@@ -617,16 +638,16 @@ class DisplayDustData {
                 'events' => self::sort_schedule_events($everyday_events)
             );
         }
-        
+
         // Process day events and create tabs
         $day_counts = array();
         foreach ($day_events as $day => $events) {
             $day_counts[$day] = ($day_counts[$day] ?? 0) + 1;
         }
-        
+
         foreach ($day_events as $day => $events) {
             $tab_key = strtolower(str_replace(' ', '_', $day));
-            
+
             // Add date suffix if multiple occurrences of same day
             $label = $day;
             if ($day_counts[$day] > 1) {
@@ -637,16 +658,16 @@ class DisplayDustData {
                     $label .= ' ' . $date->format('n/j');
                 }
             }
-            
+
             $tabs[$tab_key] = array(
                 'label' => $label,
                 'events' => self::sort_schedule_events($events)
             );
         }
-        
+
         return $tabs;
     }
-    
+
     /**
      * Sort schedule events: all-day first, then by start time, then by name
      */
@@ -654,27 +675,27 @@ class DisplayDustData {
         uasort($events, function($a, $b) {
             $a_occurrence = $a['occurrence'] ?? array();
             $b_occurrence = $b['occurrence'] ?? array();
-            
+
             // Check if all-day events
             $a_all_day = isset($a_occurrence['all_day']) && $a_occurrence['all_day'];
             $b_all_day = isset($b_occurrence['all_day']) && $b_occurrence['all_day'];
-            
+
             if ($a_all_day && !$b_all_day) return -1;
             if (!$a_all_day && $b_all_day) return 1;
-            
+
             // Sort by start time
             $a_time = $a_occurrence['start_time'] ?? '';
             $b_time = $b_occurrence['start_time'] ?? '';
-            
+
             if ($a_time && $b_time) {
                 $time_cmp = strcmp($a_time, $b_time);
                 if ($time_cmp !== 0) return $time_cmp;
             }
-            
+
             // Sort by title
             return strcmp($a['title'] ?? '', $b['title'] ?? '');
         });
-        
+
         return $events;
     }
 
@@ -688,18 +709,18 @@ class DisplayDustData {
      */
     public static function get_repeat_days($title, $current_day, $all_data) {
         $repeat_days = array();
-        
+
         foreach ($all_data as $event) {
-            if (isset($event['title']) && $event['title'] === $title && 
+            if (isset($event['title']) && $event['title'] === $title &&
                 isset($event['day']) && $event['day'] !== $current_day) {
                 $repeat_days[] = $event['day'];
             }
         }
-        
+
         // Remove duplicates and sort
         $repeat_days = array_unique($repeat_days);
         sort($repeat_days);
-        
+
         return $repeat_days;
     }
 
@@ -712,18 +733,18 @@ class DisplayDustData {
      */
     public static function get_all_repeat_days($title, $all_data) {
         $all_days = array();
-        
+
         foreach ($all_data as $event) {
-            if (isset($event['title']) && $event['title'] === $title && 
+            if (isset($event['title']) && $event['title'] === $title &&
                 isset($event['day']) && !empty($event['day'])) {
                 $all_days[] = $event['day'];
             }
         }
-        
+
         // Remove duplicates and sort
         $all_days = array_unique($all_days);
         sort($all_days);
-        
+
         return $all_days;
     }
 
@@ -757,7 +778,7 @@ class DisplayDustData {
 
         if ($camp) echo '<div class="dust-schedule-camp"><strong>Camp:</strong> ' . esc_html($camp) . '</div>';
         if ($location) echo '<div class="dust-schedule-location"><strong>Location:</strong> ' . esc_html($location) . '</div>';
-        
+
         if ($day) {
             if ($tab_context === 'repeating' && $all_data && !empty($title)) {
                 // On Repeating tab: show "Repeats on [list of all days]"
@@ -777,7 +798,7 @@ class DisplayDustData {
                     }
                 }
             }
-            
+
             echo '<div class="dust-schedule-day"><strong>Day:</strong> ' . $day_text . '</div>';
         }
 
@@ -820,6 +841,53 @@ class DisplayDustData {
         }
         echo '</div>';
     }
+    /**
+     * Export schedule as CSV file
+     */
+    public function export_schedule_csv() {
+        check_ajax_referer('dust_events_nonce', 'nonce');
+
+        $event_name = sanitize_text_field($_POST['event_name'] ?? get_option('dust_events_event_name'));
+        $data = self::get_data('schedule', $event_name);
+
+        if (is_wp_error($data)) {
+            wp_die('Error loading schedule data');
+        }
+
+        $csv_content = $this->generate_csv($data);
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $event_name . '-schedule.csv"');
+        echo $csv_content;
+        wp_die();
+    }
+
+    private function generate_csv($schedule_data) {
+        $output = fopen('php://temp', 'r+');
+
+        // CSV headers
+        fputcsv($output, array('Title', 'Camp', 'Location', 'Day', 'Start Time', 'End Time', 'Description'));
+
+        foreach ($schedule_data as $event) {
+            $row = array(
+                $event['title'] ?? '',
+                $event['camp'] ?? '',
+                $event['location'] ?? '',
+                $event['day'] ?? '',
+                isset($event['occurrence']['start_time']) ? $event['occurrence']['start_time'] : '',
+                isset($event['occurrence']['end_time']) ? $event['occurrence']['end_time'] : '',
+                strip_tags($event['description'] ?? '')
+            );
+            fputcsv($output, $row);
+        }
+
+        rewind($output);
+        $csv_content = stream_get_contents($output);
+        fclose($output);
+        
+        return $csv_content;
+    }
+
     /**
      * Export schedule as ICS file
      */
@@ -952,13 +1020,31 @@ class DisplayDustData {
      */
     public static function render_ics_button($event_name = '', $text = '' ) {
         $event_name = $event_name ?: get_option('dust_events_event_name');
-        $text = $text ?: '📅 Export Schedule to Calendar';
+        $text = $text ?: '📅 Export to Calendar';
 
         $escaped = array(
             'event_name' => esc_attr($event_name),
             'text' => esc_html($text),
         );
         return "<button class=\"dust-ics-export-btn\" data-event=\"{$escaped['event_name']}\">{$escaped['text']}</button>";
+    }
+
+    /**
+     * Render CSV export button
+     *
+     * @param string $event_name Event name
+     * @param string|null $text Button text
+     * @return string HTML button
+     */
+    public static function render_csv_button($event_name = '', $text = '') {
+        $event_name = $event_name ?: get_option('dust_events_event_name');
+        $text = $text ?: '📊 Export to CSV';
+
+        $escaped = array(
+            'event_name' => esc_attr($event_name),
+            'text' => esc_html($text),
+        );
+        return "<button class=\"dust-csv-export-btn\" data-event=\"{$escaped['event_name']}\">{$escaped['text']}</button>";
     }
 
     /**
@@ -1012,4 +1098,15 @@ function lunacode_display_dust_data_render($type, $event_name = null, $options =
  */
 function dust_schedule_ics_button($event_name = '', $text = '') {
     return \LunaCode\DisplayDustData::render_ics_button($event_name, $text);
+}
+
+/**
+ * Render CSV export button
+ *
+ * @param string $event_name Event name
+ * @param string $text Button text
+ * @return string HTML button
+ */
+function dust_schedule_csv_button($event_name = '', $text = '') {
+    return \LunaCode\DisplayDustData::render_csv_button($event_name, $text);
 }

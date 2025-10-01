@@ -13,7 +13,7 @@ Many thanks to Dust's creator Damian for creating and supporting the app, and fo
    [dust_camps layout="grid" show_coordinates="false" show_images="true"]
    [dust_art layout="grid" show_images="true"]
    [dust_schedule layout="list"]
-   [dust_schedule display="tabs" layout="grid"]
+   [dust_schedule display="tabs" layout="grid" show_export_buttons="true" ]
    [dust_music layout="list"]
    ```
 
@@ -43,7 +43,7 @@ Displays a button to export schedule data as an ICS calendar file.
 
 **Parameters:**
 
-- `text`: Custom button text (default: "📅 Export Schedule to Calendar")
+- `text`: Custom button text (default: "📅 Export to Calendar")
 - `event_name`: Specific event name (optional)
 
 **Examples:**
@@ -52,6 +52,23 @@ Displays a button to export schedule data as an ICS calendar file.
 [dust_schedule_ics_button]
 [dust_schedule_ics_button text="Download Schedule"]
 [dust_schedule_ics_button text="Get Calendar" event_name="myburn2024"]
+```
+
+### [dust_schedule_csv_button] - CSV Export Button
+
+Displays a button to export schedule data as a CSV file.
+
+**Parameters:**
+
+- `text`: Custom button text (default: "📊 Export to CSV")
+- `event_name`: Specific event name (optional)
+
+**Examples:**
+
+```
+[dust_schedule_csv_button]
+[dust_schedule_csv_button text="Download CSV"]
+[dust_schedule_csv_button text="Get Spreadsheet" event_name="myburn2024"]
 ```
 
 ## Configuration Options
@@ -63,6 +80,7 @@ Displays a button to export schedule data as an ICS calendar file.
 - `show_coordinates`: `"true"` or `"false"` (default: true) - For camps/art only
 - `show_images`: `"true"` or `"false"` (default: true)
 - `per_page`: Number of items to show, `-1` for all (default: -1)
+- `show_export_buttons`: `"true"` or `"false"` (default: false) - For schedule only
 - `display`: `"all"` or `"tabs"` (default: all) - For schedule only
 
 ### Display Layouts
@@ -290,10 +308,12 @@ dust_display_data('art', 'your-event', array('show_images' => 'true'));
 dust_display_data('schedule', 'your-event', array('layout' => 'list'));
 dust_display_data('music', 'your-event', array('per_page' => 10));
 
-// ICS export button
+// Export buttons
 echo dust_schedule_ics_button();
 echo dust_schedule_ics_button('Custom Text');
 echo dust_schedule_ics_button('Download Events', 'myburn2024');
+echo dust_schedule_csv_button();
+echo dust_schedule_csv_button('Download CSV', 'myburn2024');
 
 
 ```
@@ -302,6 +322,38 @@ echo dust_schedule_ics_button('Download Events', 'myburn2024');
 
 - API responses are sanitized using WordPress functions
 - User input is escaped and validated
+- AJAX requests use nonces for security
+- Remote API calls have timeout limits
+
+## Browser Support
+
+- Modern browsers (Chrome, Firefox, Safari, Edge)
+- IE11+ for basic functionality
+- Progressive enhancement for advanced features
+
+## License
+
+This implementation is provided as-is for integration with the Dust API. Follow WordPress coding standards and GPL licensing if distributing.
+
+## Support
+
+For issues with the [Dust API](https://dust.events/docs/Integrations/api) itself, contact the Dust team. For WordPress implementation questions, refer to WordPress documentation and community resources.
+
+## Data Sorting
+
+- **Camps & Art**: Sorted alphabetically by name
+- **Schedule & Music**: Sorted by camp name (using `camp` or `hosted_by_camp` fields), then by title
+- **Schedule Tabs**: Within each tab, events are sorted by:
+  1. All-day events first
+  2. Start time (earliest first)
+  3. Event title (alphabetical)
+
+## API Endpoints Used
+
+- `https://data.dust.events/[event-name]/camps.json`
+- `https://data.dust.events/[event-name]/art.json`
+- `https://data.dust.events/[event-name]/schedule.json`
+- `https://data.dust.events/[event-name]/music.json`ed and validated
 - AJAX requests use nonces for security
 - Remote API calls have timeout limits
 
