@@ -5,16 +5,6 @@ jQuery(document).ready(function ($) {
     var $container = $(this);
     var $button = $('<button class="dust-ics-export-btn">📅 Export to Calendar</button>');
 
-    $button.css({
-      margin: "10px 0",
-      padding: "8px 16px",
-      background: "#007cba",
-      color: "white",
-      border: "none",
-      "border-radius": "4px",
-      cursor: "pointer",
-    });
-
     $container.before($button);
 
     $button.on("click", function () {
