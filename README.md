@@ -40,7 +40,7 @@ Displays a button to export schedule data as an ICS calendar file.
 
 **Parameters:**
 
-- `text`: Custom button text (default: "📅 Export to Calendar")
+- `text`: Custom button text (default: "📅 Export Schedule to Calendar")
 - `event_name`: Specific event name (optional)
 
 **Examples:**
