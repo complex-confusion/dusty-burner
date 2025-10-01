@@ -416,9 +416,10 @@ class DisplayDustData {
      * @param array[] $data Array of item arrays
      * @param array $options
      * @param string $type 'camps'|'art'|'schedule'|'music'
+     * @param string $tab_context 'repeating' or 'day' for schedule tabs
      * @return void
      */
-    private static function render_data($data, $options = array(), $type = 'camps') {
+    public static function render_data($data, $options = array(), $type = 'camps', $tab_context = 'day') {
         $layout = isset($options['layout']) ? $options['layout'] : 'grid';
         $show_coordinates = isset($options['show_coordinates']) && $options['show_coordinates'] === 'true';
         $show_images = isset($options['show_images']) && $options['show_images'] === 'true';
@@ -426,7 +427,7 @@ class DisplayDustData {
         echo '<div class="dust-' . esc_attr($type) . '-container dust-' . esc_attr($type) . '-' . esc_attr($layout) . '">';
 
         foreach ($data as $item) {
-            self::render_single_item($item, $show_coordinates, $show_images, $type);
+            self::render_single_item($item, $show_coordinates, $show_images, $type, $data, $tab_context);
         }
 
         echo '</div>';
@@ -439,15 +440,17 @@ class DisplayDustData {
      * @param boolean $show_coordinates
      * @param boolean $show_images
      * @param string $type
+     * @param array $all_data Optional: all data for repeat checking
+     * @param string $tab_context 'repeating' or 'day' for schedule tabs
      * @return void
      */
-    private static function render_single_item($item, $show_coordinates = true, $show_images = true, $type = 'camps') {
+    public static function render_single_item($item, $show_coordinates = true, $show_images = true, $type = 'camps', $all_data = null, $tab_context = 'day') {
         echo '<div class="dust-' . esc_attr($type) . '-item" data-uid="' . esc_attr($item['uid']) . '">';
 
         if ($type === 'camps' || $type === 'art') {
             self::render_camps_art($item, $show_coordinates, $show_images, $type);
         } elseif ($type === 'schedule') {
-            self::render_schedule($item, $show_images);
+            self::render_schedule($item, $show_images, $all_data, $tab_context);
         } elseif ($type === 'music') {
             self::render_music($item);
         }
@@ -539,8 +542,9 @@ class DisplayDustData {
         $first = true;
         foreach ($tabs as $tab_key => $tab_data) {
             $active_class = $first ? ' active' : '';
+            $context = ($tab_key === 'repeating') ? 'repeating' : 'day';
             echo '<div class="dust-schedule-tab-pane' . $active_class . '" data-tab="' . esc_attr($tab_key) . '" style="display: ' . ($first ? 'block' : 'none') . ';">';
-            self::render_data($tab_data['events'], $options, 'schedule');
+            self::render_data($tab_data['events'], $options, 'schedule', $context);
             echo '</div>';
             $first = false;
         }
@@ -595,15 +599,17 @@ class DisplayDustData {
                     }
                 }
                 
-                // Also check if this title appears on 3+ different days
-                if (!$is_everyday && isset($title_day_count[$title]) && count($title_day_count[$title]) >= 3) {
+                // Also check if this title appears on 2+ different days (multi-day events)
+                if (!$is_everyday && isset($title_day_count[$title]) && count($title_day_count[$title]) >= 2) {
                     $is_everyday = true;
                 }
             }
             
             if ($is_everyday) {
                 $everyday_events[] = $event;
-            } elseif (!empty($day)) {
+            }
+            
+            if (!empty($day)) {
                 if (!isset($day_events[$day])) {
                     $day_events[$day] = array();
                 }
@@ -611,10 +617,10 @@ class DisplayDustData {
             }
         }
         
-        // Add "Every Day" tab if there are everyday events
+        // Add "Repeating" tab if there are everyday events
         if (!empty($everyday_events)) {
-            $tabs['everyday'] = array(
-                'label' => 'Every Day',
+            $tabs['repeating'] = array(
+                'label' => 'Repeating',
                 'events' => self::sort_schedule_events($everyday_events)
             );
         }
@@ -626,7 +632,6 @@ class DisplayDustData {
         }
         
         foreach ($day_events as $day => $events) {
-            $combined_events = array_merge($everyday_events, $events);
             $tab_key = strtolower(str_replace(' ', '_', $day));
             
             // Add date suffix if multiple occurrences of same day
@@ -642,7 +647,7 @@ class DisplayDustData {
             
             $tabs[$tab_key] = array(
                 'label' => $label,
-                'events' => self::sort_schedule_events($combined_events)
+                'events' => self::sort_schedule_events($events)
             );
         }
         
@@ -681,13 +686,64 @@ class DisplayDustData {
     }
 
     /**
+     * Get the days an event repeats on (excluding the current day)
+     *
+     * @param string $title Event title
+     * @param string $current_day Current day
+     * @param array $all_data All schedule data
+     * @return array Array of days the event repeats on
+     */
+    public static function get_repeat_days($title, $current_day, $all_data) {
+        $repeat_days = array();
+        
+        foreach ($all_data as $event) {
+            if (isset($event['title']) && $event['title'] === $title && 
+                isset($event['day']) && $event['day'] !== $current_day) {
+                $repeat_days[] = $event['day'];
+            }
+        }
+        
+        // Remove duplicates and sort
+        $repeat_days = array_unique($repeat_days);
+        sort($repeat_days);
+        
+        return $repeat_days;
+    }
+
+    /**
+     * Get all days an event repeats on (including all instances)
+     *
+     * @param string $title Event title
+     * @param array $all_data All schedule data
+     * @return array Array of all days the event appears on
+     */
+    public static function get_all_repeat_days($title, $all_data) {
+        $all_days = array();
+        
+        foreach ($all_data as $event) {
+            if (isset($event['title']) && $event['title'] === $title && 
+                isset($event['day']) && !empty($event['day'])) {
+                $all_days[] = $event['day'];
+            }
+        }
+        
+        // Remove duplicates and sort
+        $all_days = array_unique($all_days);
+        sort($all_days);
+        
+        return $all_days;
+    }
+
+    /**
      * Output schedule items (events) as HTML
      *
      * @param array $item
      * @param bool $show_images
+     * @param array $all_data Optional: all schedule data to check for repeats
+     * @param string $tab_context 'repeating' or 'day'
      * @return void
      */
-    private static function render_schedule($item, $show_images) {
+    public static function render_schedule($item, $show_images, $all_data = null, $tab_context = 'day') {
         $title = $item['title'];
         $description = self::format_description($item['description']);
         $camp = isset($item['camp']) ? $item['camp'] : '';
@@ -708,7 +764,29 @@ class DisplayDustData {
 
         if ($camp) echo '<div class="dust-schedule-camp"><strong>Camp:</strong> ' . esc_html($camp) . '</div>';
         if ($location) echo '<div class="dust-schedule-location"><strong>Location:</strong> ' . esc_html($location) . '</div>';
-        if ($day) echo '<div class="dust-schedule-day"><strong>Day:</strong> ' . esc_html($day) . '</div>';
+        
+        if ($day) {
+            if ($tab_context === 'repeating' && $all_data && !empty($title)) {
+                // On Repeating tab: show "Repeats on [list of all days]"
+                $all_days = self::get_all_repeat_days($title, $all_data);
+                if (!empty($all_days)) {
+                    $day_text = 'Repeats on ' . esc_html(implode(', ', $all_days));
+                } else {
+                    $day_text = esc_html($day);
+                }
+            } else {
+                // On day tabs: show "Thursday (repeats on Friday, Saturday, Sunday)"
+                $day_text = esc_html($day);
+                if ($all_data && !empty($title)) {
+                    $repeat_days = self::get_repeat_days($title, $day, $all_data);
+                    if (!empty($repeat_days)) {
+                        $day_text .= ' (repeats on ' . esc_html(implode(', ', $repeat_days)) . ')';
+                    }
+                }
+            }
+            
+            echo '<div class="dust-schedule-day"><strong>Day:</strong> ' . $day_text . '</div>';
+        }
 
         if (isset($occurrence['long'])) {
             echo '<div class="dust-schedule-time"><strong>Time:</strong> ' . esc_html($occurrence['long']) . '</div>';
