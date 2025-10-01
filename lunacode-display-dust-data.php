@@ -130,7 +130,8 @@ class DisplayDustData {
      *
      * @param string $type 'camps'|'art'|'schedule'|'music'
      * @param string|null $event_name
-     * @return array
+     * @return array|\WP_Error
+
      */
     public static function get_data($type, $event_name = null) {
         // Validate type parameter
