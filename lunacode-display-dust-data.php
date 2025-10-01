@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LunaCode Display Dust Data
  * Description: Display camps, art, schedule, and music from the Dust API
- * Version: 2.0.0
+ * Version: 0.2.0
  * Author: Complex Confusion
  * License: GPL2
  * Text Domain: lunacode-display-dust-data
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 }
 
 class LunacodeDisplayDustData {
-
+    const PLUGIN_VERSION = '0.2.0';
     const IMAGE_BASE_URL = 'https://data.dust.events/';
     const API_BASE_URL = 'https://data.dust.events/';
 
@@ -59,9 +59,9 @@ class LunacodeDisplayDustData {
 
     public function enqueue_scripts() {
         wp_enqueue_script('jquery');
-        wp_enqueue_script('dust-events-js', plugin_dir_url(__FILE__) . 'lunacode-display-dust-data.js', array('jquery'), '2.0.0', true);
-        wp_enqueue_script('dust-ics-export', plugin_dir_url(__FILE__) . 'schedule-ics-button.js', array('jquery'), '2.0.0', true);
-        wp_enqueue_style('dust-events-css', plugin_dir_url(__FILE__) . 'lunacode-display-dust-data.css', array(), '2.0.0');
+        wp_enqueue_script('dust-events-js', plugin_dir_url(__FILE__) . 'lunacode-display-dust-data.js', array('jquery'), PLUGIN_VERSION, true);
+        wp_enqueue_script('dust-ics-export', plugin_dir_url(__FILE__) . 'schedule-ics-button.js', array('jquery'), PLUGIN_VERSION, true);
+        wp_enqueue_style('dust-events-css', plugin_dir_url(__FILE__) . 'lunacode-display-dust-data.css', array(), PLUGIN_VERSION);
 
         // Localize script for AJAX
         wp_localize_script('dust-events-js', 'dust_events_ajax', array(
