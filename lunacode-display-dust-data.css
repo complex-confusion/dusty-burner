@@ -414,6 +414,15 @@
     display: block;
 }
 
+.dust-schedule-export-button {
+    text-align: right;
+    margin-bottom: 15px;
+}
+
+.dust-schedule-export-button .dust-ics-export-btn {
+    margin: 0;
+}
+
 @media (max-width: 768px) {
     .dust-schedule-tab-nav {
         flex-direction: column;

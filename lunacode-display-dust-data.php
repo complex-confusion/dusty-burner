@@ -397,14 +397,13 @@ class DisplayDustData {
 
         ob_start();
 
-        // Show export button for schedule if requested
-        if ($type === 'schedule' && $atts['show_export_button'] === 'true') {
-            echo self::render_ics_button();
-        }
-
         if ($type === 'schedule' && $atts['display'] === 'tabs') {
             self::render_schedule_tabs($data, $atts, $event_name);
         } else {
+            // Show export button for schedule if requested
+            if ($type === 'schedule' && $atts['show_export_button'] === 'true') {
+                echo self::render_ics_button();
+            }
             self::render_data($data, $atts, $type);
         }
         return ob_get_clean();
@@ -520,6 +519,11 @@ class DisplayDustData {
         $container_id = 'dust-schedule-tabs-' . uniqid();
         
         echo '<div class="dust-schedule-tabs-container" id="' . esc_attr($container_id) . '" data-event="' . esc_attr($event_name) . '">';
+        
+        // Export button if requested
+        if (isset($options['show_export_button']) && $options['show_export_button'] === 'true') {
+            echo '<div class="dust-schedule-export-button">' . self::render_ics_button($event_name) . '</div>';
+        }
         
         // Tab navigation
         echo '<div class="dust-schedule-tab-nav">';
