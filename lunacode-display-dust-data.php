@@ -371,7 +371,7 @@ class DisplayDustData {
             'per_page' => -1,
             'show_images' => 'true',
             'show_export_button' => 'false',
-            'display' => 'all'
+            'display' => 'false'
         ), $atts, $tag);
 
         $event_name = !empty($atts['event_name']) ? $atts['event_name'] : get_option('dust_events_event_name');
@@ -521,14 +521,8 @@ class DisplayDustData {
         
         echo '<div class="dust-schedule-tabs-container" id="' . esc_attr($container_id) . '" data-event="' . esc_attr($event_name) . '">';
         
-        // Toggle button
-        echo '<div class="dust-schedule-display-toggle">';
-        echo '<button class="dust-schedule-toggle-btn" data-target="tabs">Tabs</button>';
-        echo '<button class="dust-schedule-toggle-btn active" data-target="all">All Events</button>';
-        echo '</div>';
-        
         // Tab navigation
-        echo '<div class="dust-schedule-tab-nav" style="display: none;">';
+        echo '<div class="dust-schedule-tab-nav">';
         $first = true;
         foreach ($tabs as $tab_key => $tab_data) {
             $active_class = $first ? ' active' : '';
@@ -548,11 +542,6 @@ class DisplayDustData {
             echo '</div>';
             $first = false;
         }
-        echo '</div>';
-        
-        // All events view (default)
-        echo '<div class="dust-schedule-all-events">';
-        self::render_data($data, $options, 'schedule');
         echo '</div>';
         
         echo '</div>';
