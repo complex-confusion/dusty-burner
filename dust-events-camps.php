@@ -8,6 +8,8 @@
  * Text Domain: lunacode-display-dust-data
  */
 
+namespace LunacodeDisplayDustData;
+
 // Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
@@ -671,7 +673,7 @@ class LunacodeDisplayDustData {
 // Initialize the plugin
 new LunacodeDisplayDustData();
 
-// Template functions for theme developers
+// Template functions for theme developers (global namespace)
 
 /**
  * For a theme: Get array of Burn items - camps, art, events, or music
@@ -679,8 +681,8 @@ new LunacodeDisplayDustData();
  * @param string|null $event_name
  * @return array
  */
-function dust_get_data($type, $event_name = null) {
-    return LunacodeDisplayDustData::get_dust_data($type, $event_name);
+function lunacode_display_dust_data_get($type, $event_name = null) {
+    return \LunacodeDisplayDustData\LunacodeDisplayDustData::get_dust_data($type, $event_name);
 }
 
 /**
@@ -691,10 +693,9 @@ function dust_get_data($type, $event_name = null) {
  * @param string $type 'camps'|'art'|'schedule'|'music'
  * @return void
  */
-function dust_display_data($type, $event_name = null, $options = array()) {
-    $data = dust_get_data($type, $event_name);
+function lunacode_display_dust_data_render($type, $event_name = null, $options = array()) {
+    $data = lunacode_display_dust_data_get($type, $event_name);
     if (!is_wp_error($data) && !empty($data)) {
-        LunacodeDisplayDustData::render_data($data, $options, $type);
+        \LunacodeDisplayDustData\LunacodeDisplayDustData::render_data($data, $options, $type);
     }
 }
-?>
