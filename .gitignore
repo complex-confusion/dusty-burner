@@ -2,3 +2,5 @@
 .vscode/launch.json
 .api-details.md
 .amazonq
+composer.*
+vendor
