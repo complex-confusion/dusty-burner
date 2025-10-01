@@ -64,7 +64,6 @@ class DisplayDustData {
         wp_enqueue_script('dust-ics-export', plugin_dir_url(__FILE__) . 'schedule-ics-button.js', array('jquery'), self::PLUGIN_VERSION, true);
         wp_enqueue_style('dust-events-css', plugin_dir_url(__FILE__) . 'lunacode-display-dust-data.css', array(), self::PLUGIN_VERSION);
 
-        // Localize script for AJAX
         wp_localize_script('dust-events-js', 'dust_events_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('dust_events_nonce')
@@ -603,7 +602,7 @@ class DisplayDustData {
                     $ics .= "DTEND;TZID=" . $timezone_info['id'] . ":" . $end_time . "\r\n";
                 } else {
                     // Default 1 hour duration if no end time
-                    $dt = DateTime::createFromFormat('Ymd\THis', $start_time);
+                    $dt = \DateTime::createFromFormat('Ymd\THis', $start_time);
                     $dt->add(new DateInterval('PT1H'));
                     $ics .= "DTEND;TZID=" . $timezone_info['id'] . ":" . $dt->format('Ymd\THis') . "\r\n";
                 }
@@ -652,7 +651,7 @@ class DisplayDustData {
     private function parse_dust_time($event, $event_name = null) {
         if (isset($event['occurrence']['start_time'])) {
             $timezone_info = $this->get_event_timezone($event_name);
-            $dt = new DateTime($event['occurrence']['start_time'], new DateTimeZone($timezone_info['id']));
+            $dt = new \DateTime($event['occurrence']['start_time'], new \DateTimeZone($timezone_info['id']));
             return $dt->format('Ymd\THis');
         }
         return null;
@@ -661,7 +660,7 @@ class DisplayDustData {
     private function parse_dust_end_time($event, $event_name = null) {
         if (isset($event['occurrence']['end_time'])) {
             $timezone_info = $this->get_event_timezone($event_name);
-            $dt = new DateTime($event['occurrence']['end_time'], new DateTimeZone($timezone_info['id']));
+            $dt = new \DateTime($event['occurrence']['end_time'], new \DateTimeZone($timezone_info['id']));
             return $dt->format('Ymd\THis');
         }
         return null;
