@@ -59,9 +59,9 @@ class LunacodeDisplayDustData {
 
     public function enqueue_scripts() {
         wp_enqueue_script('jquery');
-        wp_enqueue_script('dust-events-js', plugin_dir_url(__FILE__) . 'camps.js', array('jquery'), '2.0.0', true);
+        wp_enqueue_script('dust-events-js', plugin_dir_url(__FILE__) . 'lunacode-display-dust-data.js', array('jquery'), '2.0.0', true);
         wp_enqueue_script('dust-ics-export', plugin_dir_url(__FILE__) . 'schedule-ics-button.js', array('jquery'), '2.0.0', true);
-        wp_enqueue_style('dust-events-css', plugin_dir_url(__FILE__) . 'camps.css', array(), '2.0.0');
+        wp_enqueue_style('dust-events-css', plugin_dir_url(__FILE__) . 'lunacode-display-dust-data.css', array(), '2.0.0');
 
         // Localize script for AJAX
         wp_localize_script('dust-events-js', 'dust_events_ajax', array(
