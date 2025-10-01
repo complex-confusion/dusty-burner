@@ -328,7 +328,7 @@ class DisplayDustData {
      */
     public function display_ics_button_shortcode($atts, $content = null) {
         $atts = shortcode_atts(array(
-            'text' => '📅 Export to Calendar',
+            'text' => '📅 Export Schedule to Calendar',
             'event_name' => ''
         ), $atts, 'dust_schedule_ics_button');
 
@@ -677,7 +677,7 @@ class DisplayDustData {
      * @param string $event_name Event name
      * @return string HTML button
      */
-    public static function render_ics_button($text = '📅 Export to Calendar', $event_name = '') {
+    public static function render_ics_button($text = '📅 Export Schedule to Calendar', $event_name = '') {
         $button_text = esc_html($text);
         $data_event = !empty($event_name) ? ' data-event="' . esc_attr($event_name) . '"' : '';
 
@@ -733,6 +733,6 @@ function lunacode_display_dust_data_render($type, $event_name = null, $options =
  * @param string $event_name Event name
  * @return string HTML button
  */
-function dust_schedule_ics_button($text = '📅 Export to Calendar', $event_name = '') {
+function dust_schedule_ics_button($text = '📅 Export Schedule to Calendar', $event_name = '') {
     return \LunaCode\DisplayDustData::render_ics_button($text, $event_name);
 }
