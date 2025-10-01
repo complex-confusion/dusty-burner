@@ -370,7 +370,8 @@ class DisplayDustData {
             'show_coordinates' => 'true',
             'per_page' => -1,
             'show_images' => 'true',
-            'show_export_button' => 'false'
+            'show_export_button' => 'false',
+            'display' => 'all'
         ), $atts, $tag);
 
         $event_name = !empty($atts['event_name']) ? $atts['event_name'] : get_option('dust_events_event_name');
@@ -401,7 +402,11 @@ class DisplayDustData {
             echo self::render_ics_button();
         }
 
-        self::render_data($data, $atts, $type);
+        if ($type === 'schedule' && $atts['display'] === 'tabs') {
+            self::render_schedule_tabs($data, $atts, $event_name);
+        } else {
+            self::render_data($data, $atts, $type);
+        }
         return ob_get_clean();
     }
 
@@ -502,6 +507,177 @@ class DisplayDustData {
             echo '</div>';
         }
         echo '</div>';
+    }
+
+    /**
+     * Render schedule with tabs
+     */
+    private static function render_schedule_tabs($data, $options, $event_name) {
+        $tabs = self::organize_schedule_by_days($data);
+        $container_id = 'dust-schedule-tabs-' . uniqid();
+        
+        echo '<div class="dust-schedule-tabs-container" id="' . esc_attr($container_id) . '" data-event="' . esc_attr($event_name) . '">';
+        
+        // Toggle button
+        echo '<div class="dust-schedule-display-toggle">';
+        echo '<button class="dust-schedule-toggle-btn" data-target="tabs">Tabs</button>';
+        echo '<button class="dust-schedule-toggle-btn active" data-target="all">All Events</button>';
+        echo '</div>';
+        
+        // Tab navigation
+        echo '<div class="dust-schedule-tab-nav" style="display: none;">';
+        $first = true;
+        foreach ($tabs as $tab_key => $tab_data) {
+            $active_class = $first ? ' active' : '';
+            echo '<button class="dust-schedule-tab-btn' . $active_class . '" data-tab="' . esc_attr($tab_key) . '">' . esc_html($tab_data['label']) . '</button>';
+            $first = false;
+        }
+        echo '</div>';
+        
+        // Tab content
+        echo '<div class="dust-schedule-tab-content">';
+        $first = true;
+        foreach ($tabs as $tab_key => $tab_data) {
+            $active_class = $first ? ' active' : '';
+            echo '<div class="dust-schedule-tab-pane' . $active_class . '" data-tab="' . esc_attr($tab_key) . '" style="display: ' . ($first ? 'block' : 'none') . ';">';
+            self::render_data($tab_data['events'], $options, 'schedule');
+            echo '</div>';
+            $first = false;
+        }
+        echo '</div>';
+        
+        // All events view (default)
+        echo '<div class="dust-schedule-all-events">';
+        self::render_data($data, $options, 'schedule');
+        echo '</div>';
+        
+        echo '</div>';
+    }
+    
+    /**
+     * Organize schedule data by days
+     */
+    private static function organize_schedule_by_days($data) {
+        $tabs = array();
+        $everyday_events = array();
+        $day_events = array();
+        $title_day_count = array();
+        
+        // First pass: count how many different days each event title appears on
+        foreach ($data as $event) {
+            $title = $event['title'] ?? '';
+            $day = $event['day'] ?? '';
+            
+            if (!empty($title) && !empty($day)) {
+                if (!isset($title_day_count[$title])) {
+                    $title_day_count[$title] = array();
+                }
+                $title_day_count[$title][$day] = true;
+            }
+        }
+        
+        // Second pass: categorize events
+        foreach ($data as $event) {
+            $title = $event['title'] ?? '';
+            $day = $event['day'] ?? '';
+            
+            // Check if it's an everyday event (appears on 3+ different days or has daily keywords)
+            $is_everyday = false;
+            if (!empty($title)) {
+                $daily_keywords = array('daily', 'every day', 'everyday', 'all days');
+                $title_lower = strtolower($title);
+                $desc_lower = strtolower($event['description'] ?? '');
+                
+                foreach ($daily_keywords as $keyword) {
+                    if (strpos($title_lower, $keyword) !== false || strpos($desc_lower, $keyword) !== false) {
+                        $is_everyday = true;
+                        break;
+                    }
+                }
+                
+                // Also check if this title appears on 3+ different days
+                if (!$is_everyday && isset($title_day_count[$title]) && count($title_day_count[$title]) >= 3) {
+                    $is_everyday = true;
+                }
+            }
+            
+            if ($is_everyday) {
+                $everyday_events[] = $event;
+            } elseif (!empty($day)) {
+                if (!isset($day_events[$day])) {
+                    $day_events[$day] = array();
+                }
+                $day_events[$day][] = $event;
+            }
+        }
+        
+        // Add "Every Day" tab if there are everyday events
+        if (!empty($everyday_events)) {
+            $tabs['everyday'] = array(
+                'label' => 'Every Day',
+                'events' => self::sort_schedule_events($everyday_events)
+            );
+        }
+        
+        // Process day events and create tabs
+        $day_counts = array();
+        foreach ($day_events as $day => $events) {
+            $day_counts[$day] = ($day_counts[$day] ?? 0) + 1;
+        }
+        
+        foreach ($day_events as $day => $events) {
+            $combined_events = array_merge($everyday_events, $events);
+            $tab_key = strtolower(str_replace(' ', '_', $day));
+            
+            // Add date suffix if multiple occurrences of same day
+            $label = $day;
+            if ($day_counts[$day] > 1) {
+                // Extract date from first event if available
+                $first_event = reset($events);
+                if (isset($first_event['occurrence']['start_time'])) {
+                    $date = new DateTime($first_event['occurrence']['start_time']);
+                    $label .= ' ' . $date->format('n/j');
+                }
+            }
+            
+            $tabs[$tab_key] = array(
+                'label' => $label,
+                'events' => self::sort_schedule_events($combined_events)
+            );
+        }
+        
+        return $tabs;
+    }
+    
+    /**
+     * Sort schedule events: all-day first, then by start time, then by name
+     */
+    private static function sort_schedule_events($events) {
+        uasort($events, function($a, $b) {
+            $a_occurrence = $a['occurrence'] ?? array();
+            $b_occurrence = $b['occurrence'] ?? array();
+            
+            // Check if all-day events
+            $a_all_day = isset($a_occurrence['all_day']) && $a_occurrence['all_day'];
+            $b_all_day = isset($b_occurrence['all_day']) && $b_occurrence['all_day'];
+            
+            if ($a_all_day && !$b_all_day) return -1;
+            if (!$a_all_day && $b_all_day) return 1;
+            
+            // Sort by start time
+            $a_time = $a_occurrence['start_time'] ?? '';
+            $b_time = $b_occurrence['start_time'] ?? '';
+            
+            if ($a_time && $b_time) {
+                $time_cmp = strcmp($a_time, $b_time);
+                if ($time_cmp !== 0) return $time_cmp;
+            }
+            
+            // Sort by title
+            return strcmp($a['title'] ?? '', $b['title'] ?? '');
+        });
+        
+        return $events;
     }
 
     /**

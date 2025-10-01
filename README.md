@@ -13,6 +13,7 @@ Many thanks to Dust's creator Damian for creating and supporting the app, and fo
    [dust_camps layout="grid" show_coordinates="false" show_images="true"]
    [dust_art layout="grid" show_images="true"]
    [dust_schedule layout="list"]
+   [dust_schedule display="tabs" layout="grid"]
    [dust_music layout="list"]
    ```
 
@@ -29,6 +30,8 @@ Shows art installations and mutant vehicles with artist information.
 ### [dust_schedule] - Display Schedule
 
 Shows scheduled events sorted by camp, then by title.
+
+**Tabbed Display**: Use `display="tabs"` to show events organized by day with an "Every Day" tab for recurring events. Each day tab includes both daily recurring events and day-specific events.
 
 ### [dust_music] - Display Music/Parties
 
@@ -60,6 +63,7 @@ Displays a button to export schedule data as an ICS calendar file.
 - `show_coordinates`: `"true"` or `"false"` (default: true) - For camps/art only
 - `show_images`: `"true"` or `"false"` (default: true)
 - `per_page`: Number of items to show, `-1` for all (default: -1)
+- `display`: `"all"` or `"tabs"` (default: all) - For schedule only
 
 ### Display Layouts
 
@@ -120,6 +124,17 @@ Displays a button to export schedule data as an ICS calendar file.
 - `.dust-schedule-time`: Event time
 - `.dust-schedule-description`: Event description
 
+**Schedule Tabs:**
+
+- `.dust-schedule-tabs-container`: Tabbed schedule container
+- `.dust-schedule-display-toggle`: Toggle buttons container
+- `.dust-schedule-toggle-btn`: Toggle button (tabs/all)
+- `.dust-schedule-tab-nav`: Tab navigation container
+- `.dust-schedule-tab-btn`: Individual tab button
+- `.dust-schedule-tab-content`: Tab content container
+- `.dust-schedule-tab-pane`: Individual tab pane
+- `.dust-schedule-all-events`: All events view container
+
 **Music:**
 
 - `.dust-music-container`: Main container
@@ -149,6 +164,14 @@ LunaCode.DisplayDustData.highlightItem("u-123", "camps");
 
 // Filter items
 LunaCode.DisplayDustData.filterItems("search-term", "camps");
+
+// Schedule tabs functionality
+LunaCode.DisplayDustData.toggleScheduleDisplay("container-id", "tabs"); // or "all"
+LunaCode.DisplayDustData.switchScheduleTab("container-id", "friday");
+
+// Global convenience functions
+dustToggleScheduleDisplay("container-id", "tabs");
+dustSwitchScheduleTab("container-id", "everyday");
 ```
 
 ### Custom Events
@@ -300,6 +323,10 @@ For issues with the [Dust API](https://dust.events/docs/Integrations/api) itself
 
 - **Camps & Art**: Sorted alphabetically by name
 - **Schedule & Music**: Sorted by camp name (using `camp` or `hosted_by_camp` fields), then by title
+- **Schedule Tabs**: Within each tab, events are sorted by:
+  1. All-day events first
+  2. Start time (earliest first)
+  3. Event title (alphabetical)
 
 ## API Endpoints Used
 

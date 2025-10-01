@@ -327,6 +327,108 @@
     font-size: 14px;
 }
 
+/* Schedule Tabs Styles */
+.dust-schedule-tabs-container {
+    margin: 20px 0;
+}
+
+.dust-schedule-display-toggle {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 5px;
+}
+
+.dust-schedule-toggle-btn {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    background: #f8f9fa;
+    color: #666;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.dust-schedule-toggle-btn:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.dust-schedule-toggle-btn.active {
+    background: #007cba;
+    color: white;
+    border-color: #007cba;
+}
+
+.dust-schedule-tab-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 10px;
+}
+
+.dust-schedule-tab-btn {
+    padding: 10px 16px;
+    border: none;
+    background: transparent;
+    color: #666;
+    cursor: pointer;
+    border-radius: 4px 4px 0 0;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.dust-schedule-tab-btn:hover {
+    background: #f8f9fa;
+    color: #333;
+}
+
+.dust-schedule-tab-btn.active {
+    background: #007cba;
+    color: white;
+}
+
+.dust-schedule-tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #007cba;
+}
+
+.dust-schedule-tab-content {
+    position: relative;
+}
+
+.dust-schedule-tab-pane {
+    display: none;
+}
+
+.dust-schedule-tab-pane.active {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .dust-schedule-tab-nav {
+        flex-direction: column;
+    }
+    
+    .dust-schedule-tab-btn {
+        text-align: left;
+        border-radius: 4px;
+    }
+    
+    .dust-schedule-display-toggle {
+        flex-direction: column;
+    }
+}
+
 /* Custom themes can override these variables */
 :root {
     --dust-events-primary-color: #007cba;

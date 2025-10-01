@@ -16,6 +16,7 @@
         this.handleImageErrors();
         this.setupLazyLoading();
         this.setupSearch();
+        this.setupScheduleTabs();
       },
 
       bindEvents: function () {
@@ -226,6 +227,69 @@
           $item[0].scrollIntoView({ behavior: "smooth", block: "center" });
         }
       },
+
+      // Setup schedule tabs functionality
+      setupScheduleTabs: function () {
+        // Handle display toggle (tabs vs all events)
+        $(document).on('click', '.dust-schedule-toggle-btn', function(e) {
+          e.preventDefault();
+          var $btn = $(this);
+          var target = $btn.data('target');
+          var $container = $btn.closest('.dust-schedule-tabs-container');
+          
+          // Update button states
+          $btn.siblings('.dust-schedule-toggle-btn').removeClass('active');
+          $btn.addClass('active');
+          
+          if (target === 'tabs') {
+            $container.find('.dust-schedule-tab-nav').show();
+            $container.find('.dust-schedule-tab-content').show();
+            $container.find('.dust-schedule-all-events').hide();
+          } else {
+            $container.find('.dust-schedule-tab-nav').hide();
+            $container.find('.dust-schedule-tab-content').hide();
+            $container.find('.dust-schedule-all-events').show();
+          }
+        });
+        
+        // Handle tab switching
+        $(document).on('click', '.dust-schedule-tab-btn', function(e) {
+          e.preventDefault();
+          var $btn = $(this);
+          var tabId = $btn.data('tab');
+          var $container = $btn.closest('.dust-schedule-tabs-container');
+          
+          // Update tab button states
+          $btn.siblings('.dust-schedule-tab-btn').removeClass('active');
+          $btn.addClass('active');
+          
+          // Show corresponding tab content
+          $container.find('.dust-schedule-tab-pane').removeClass('active').hide();
+          $container.find('.dust-schedule-tab-pane[data-tab="' + tabId + '"]').addClass('active').show();
+        });
+      },
+
+      // Public method to toggle schedule display
+      toggleScheduleDisplay: function(containerId, displayType) {
+        var $container = $('#' + containerId);
+        if ($container.length) {
+          var $btn = $container.find('.dust-schedule-toggle-btn[data-target="' + displayType + '"]');
+          if ($btn.length) {
+            $btn.click();
+          }
+        }
+      },
+
+      // Public method to switch to specific tab
+      switchScheduleTab: function(containerId, tabId) {
+        var $container = $('#' + containerId);
+        if ($container.length) {
+          var $btn = $container.find('.dust-schedule-tab-btn[data-tab="' + tabId + '"]');
+          if ($btn.length) {
+            $btn.click();
+          }
+        }
+      },
     },
   };
 
@@ -233,6 +297,15 @@
   window.LunaCode = Object.assign({}, window.LunaCode, {
     DisplayDustData: LunaCode.DisplayDustData,
   });
+
+  // Global convenience functions for schedule tabs
+  window.dustToggleScheduleDisplay = function(containerId, displayType) {
+    LunaCode.DisplayDustData.toggleScheduleDisplay(containerId, displayType);
+  };
+
+  window.dustSwitchScheduleTab = function(containerId, tabId) {
+    LunaCode.DisplayDustData.switchScheduleTab(containerId, tabId);
+  };
 
   // Custom events that other developers can listen to
   $(document).on("dustItemClicked", function (event, data) {
