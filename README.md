@@ -34,6 +34,23 @@ Shows scheduled events sorted by camp, then by title.
 
 Shows music events and parties sorted by camp, then by title.
 
+### [dust_schedule_ics_button] - ICS Export Button
+
+Displays a button to export schedule data as an ICS calendar file.
+
+**Parameters:**
+
+- `text`: Custom button text (default: "📅 Export to Calendar")
+- `event_name`: Specific event name (optional)
+
+**Examples:**
+
+```
+[dust_schedule_ics_button]
+[dust_schedule_ics_button text="Download Schedule"]
+[dust_schedule_ics_button text="Get Calendar" event_name="myburn2024"]
+```
+
 ## Configuration Options
 
 ### Shortcode Parameters (All Shortcodes)
@@ -119,19 +136,19 @@ Shows music events and parties sorted by camp, then by title.
 
 ```javascript
 // Refresh data for any type
-LunacodeDisplayDustData.refreshData("camps", "event-name");
-LunacodeDisplayDustData.refreshData("art", "event-name");
-LunacodeDisplayDustData.refreshData("schedule", "event-name");
-LunacodeDisplayDustData.refreshData("music", "event-name");
+LunaCode.DisplayDustData.refreshData("camps", "event-name");
+LunaCode.DisplayDustData.refreshData("art", "event-name");
+LunaCode.DisplayDustData.refreshData("schedule", "event-name");
+LunaCode.DisplayDustData.refreshData("music", "event-name");
 
 // Get specific item data
-var item = LunacodeDisplayDustData.getItemByUid("u-123", "camps");
+var item = LunaCode.DisplayDustData.getItemByUid("u-123", "camps");
 
 // Highlight an item
-LunacodeDisplayDustData.highlightItem("u-123", "camps");
+LunaCode.DisplayDustData.highlightItem("u-123", "camps");
 
 // Filter items
-LunacodeDisplayDustData.filterItems("search-term", "camps");
+LunaCode.DisplayDustData.filterItems("search-term", "camps");
 ```
 
 ### Custom Events
@@ -250,8 +267,12 @@ dust_display_data('art', 'your-event', array('show_images' => 'true'));
 dust_display_data('schedule', 'your-event', array('layout' => 'list'));
 dust_display_data('music', 'your-event', array('per_page' => 10));
 
-// Backward compatibility
-dust_display_camps('your-event', array('layout' => 'grid'));
+// ICS export button
+echo dust_schedule_ics_button();
+echo dust_schedule_ics_button('Custom Text');
+echo dust_schedule_ics_button('Download Events', 'myburn2024');
+
+
 ```
 
 ## Security Considerations

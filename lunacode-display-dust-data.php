@@ -8,14 +8,14 @@
  * Text Domain: lunacode-display-dust-data
  */
 
-namespace LunacodeDisplayDustData;
+namespace LunaCode;
 
 // Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
 }
 
-class LunacodeDisplayDustData {
+class DisplayDustData {
     const PLUGIN_VERSION = '0.2.0';
     const IMAGE_BASE_URL = 'https://data.dust.events/';
     const API_BASE_URL = 'https://data.dust.events/';
@@ -27,6 +27,7 @@ class LunacodeDisplayDustData {
         add_shortcode('dust_art', array($this, 'display_art_shortcode'));
         add_shortcode('dust_schedule', array($this, 'display_schedule_shortcode'));
         add_shortcode('dust_music', array($this, 'display_music_shortcode'));
+        add_shortcode('dust_schedule_ics_button', array($this, 'display_ics_button_shortcode'));
 
         // Add admin menu for settings
         add_action('admin_menu', array($this, 'add_admin_menu'));
@@ -63,7 +64,6 @@ class LunacodeDisplayDustData {
         wp_enqueue_script('dust-ics-export', plugin_dir_url(__FILE__) . 'schedule-ics-button.js', array('jquery'), self::PLUGIN_VERSION, true);
         wp_enqueue_style('dust-events-css', plugin_dir_url(__FILE__) . 'lunacode-display-dust-data.css', array(), self::PLUGIN_VERSION);
 
-        // Localize script for AJAX
         wp_localize_script('dust-events-js', 'dust_events_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('dust_events_nonce')
@@ -321,6 +321,18 @@ class LunacodeDisplayDustData {
 
     public function display_music_shortcode($atts, $content = null) {
         return $this->display_shortcode($atts, $content, 'dust_music', 'music');
+    }
+
+    /**
+     * Shortcode for ICS export button
+     */
+    public function display_ics_button_shortcode($atts, $content = null) {
+        $atts = shortcode_atts(array(
+            'text' => '📅 Export to Calendar',
+            'event_name' => ''
+        ), $atts, 'dust_schedule_ics_button');
+
+        return self::render_ics_button($atts['text'], $atts['event_name']);
     }
 
     /**
@@ -590,7 +602,7 @@ class LunacodeDisplayDustData {
                     $ics .= "DTEND;TZID=" . $timezone_info['id'] . ":" . $end_time . "\r\n";
                 } else {
                     // Default 1 hour duration if no end time
-                    $dt = DateTime::createFromFormat('Ymd\THis', $start_time);
+                    $dt = \DateTime::createFromFormat('Ymd\THis', $start_time);
                     $dt->add(new DateInterval('PT1H'));
                     $ics .= "DTEND;TZID=" . $timezone_info['id'] . ":" . $dt->format('Ymd\THis') . "\r\n";
                 }
@@ -639,7 +651,7 @@ class LunacodeDisplayDustData {
     private function parse_dust_time($event, $event_name = null) {
         if (isset($event['occurrence']['start_time'])) {
             $timezone_info = $this->get_event_timezone($event_name);
-            $dt = new DateTime($event['occurrence']['start_time'], new DateTimeZone($timezone_info['id']));
+            $dt = new \DateTime($event['occurrence']['start_time'], new \DateTimeZone($timezone_info['id']));
             return $dt->format('Ymd\THis');
         }
         return null;
@@ -648,7 +660,7 @@ class LunacodeDisplayDustData {
     private function parse_dust_end_time($event, $event_name = null) {
         if (isset($event['occurrence']['end_time'])) {
             $timezone_info = $this->get_event_timezone($event_name);
-            $dt = new DateTime($event['occurrence']['end_time'], new DateTimeZone($timezone_info['id']));
+            $dt = new \DateTime($event['occurrence']['end_time'], new \DateTimeZone($timezone_info['id']));
             return $dt->format('Ymd\THis');
         }
         return null;
@@ -656,6 +668,20 @@ class LunacodeDisplayDustData {
 
     private function escape_ics($text) {
         return str_replace(["\n", "\r", ",", ";"], ["\\n", "", "\\,", "\\;"], strip_tags($text));
+    }
+
+    /**
+     * Render ICS export button
+     *
+     * @param string $text Button text
+     * @param string $event_name Event name
+     * @return string HTML button
+     */
+    public static function render_ics_button($text = '📅 Export to Calendar', $event_name = '') {
+        $button_text = esc_html($text);
+        $data_event = !empty($event_name) ? ' data-event="' . esc_attr($event_name) . '"' : '';
+
+        return '<button class="dust-ics-export-btn"' . $data_event . '>' . $button_text . '</button>';
     }
 
     /**
@@ -671,7 +697,7 @@ class LunacodeDisplayDustData {
 }
 
 // Initialize the plugin
-new LunacodeDisplayDustData();
+new DisplayDustData();
 
 // Template functions for theme developers (global namespace)
 
@@ -682,7 +708,7 @@ new LunacodeDisplayDustData();
  * @return array
  */
 function lunacode_display_dust_data_get($type, $event_name = null) {
-    return \LunacodeDisplayDustData\LunacodeDisplayDustData::get_dust_data($type, $event_name);
+    return \LunaCode\DisplayDustData::get_dust_data($type, $event_name);
 }
 
 /**
@@ -696,6 +722,17 @@ function lunacode_display_dust_data_get($type, $event_name = null) {
 function lunacode_display_dust_data_render($type, $event_name = null, $options = array()) {
     $data = lunacode_display_dust_data_get($type, $event_name);
     if (!is_wp_error($data) && !empty($data)) {
-        \LunacodeDisplayDustData\LunacodeDisplayDustData::render_data($data, $options, $type);
+        \LunaCode\DisplayDustData::render_data($data, $options, $type);
     }
+}
+
+/**
+ * Render ICS export button
+ *
+ * @param string $text Button text
+ * @param string $event_name Event name
+ * @return string HTML button
+ */
+function dust_schedule_ics_button($text = '📅 Export to Calendar', $event_name = '') {
+    return \LunaCode\DisplayDustData::render_ics_button($text, $event_name);
 }
