@@ -1,11 +1,11 @@
 <?php
 /**
- * Plugin Name: Dust Events Display
- * Description: Display camps, art, schedule, and music from Dust Events API
+ * Plugin Name: LunaCode Display Dust Data
+ * Description: Display camps, art, schedule, and music from the Dust API
  * Version: 2.0.0
  * Author: Complex Confusion
  * License: GPL2
- * Text Domain: dust-events-camps
+ * Text Domain: lunacode-display-dust-data
  */
 
 // Prevent direct access
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class DustEvents {
+class LunacodeDisplayDustData {
 
     const IMAGE_BASE_URL = 'https://data.dust.events/';
     const API_BASE_URL = 'https://data.dust.events/';
@@ -70,8 +70,8 @@ class DustEvents {
 
     public function add_admin_menu() {
         add_options_page(
-            'Dust Events Settings',
-            'Dust Events',
+            'LunaCode Display Dust Data Settings',
+            'LunaCode Display Dust Data',
             'manage_options',
             'dust-events',
             array($this, 'options_page')
@@ -98,13 +98,13 @@ class DustEvents {
     }
 
     public function settings_section_callback() {
-        echo 'Enter your unique event name from Dust Events:';
+        echo 'Enter Dust\'s unique name for your regional burn:';
     }
 
     public function event_name_render() {
         $event_name = get_option('dust_events_event_name');
         echo '<input type="text" name="dust_events_event_name" value="' . esc_attr($event_name) . '" />';
-        echo '<p class="description">This is the unique name shown when you edit the event in Dust Events.</p>';
+        echo '<p class="description">This is the unique name used to register your regional burn in Dust.</p>';
     }
 
     public function options_page() {
@@ -113,7 +113,7 @@ class DustEvents {
         }
         ?>
         <form action='options.php' method='post'>
-            <h2>Dust Events Settings</h2>
+            <h2>LunaCode Display Dust Data Settings</h2>
             <?php
             settings_fields('dust_events');
             do_settings_sections('dust_events');
@@ -158,7 +158,7 @@ class DustEvents {
         // Fetch data from API
         $response = wp_remote_get($api_url, array(
             'timeout' => 15,
-            'user-agent' => 'WordPress Dust Events Plugin'
+            'user-agent' => 'LunaCode Display Dust Data WordPress Plugin'
         ));
 
         if (is_wp_error($response)) {
@@ -559,7 +559,7 @@ class DustEvents {
 
         $ics = "BEGIN:VCALENDAR\r\n";
         $ics .= "VERSION:2.0\r\n";
-        $ics .= "PRODID:-//Dust Events//Schedule Export//EN\r\n";
+        $ics .= "PRODID:-//LunaCode Display Dust Data//Schedule Export//EN\r\n";
         $ics .= "CALSCALE:GREGORIAN\r\n";
 
         // Add timezone definition
@@ -578,7 +578,7 @@ class DustEvents {
                 $ics .= "LOCATION:" . $this->escape_ics($event['location']) . "\r\n";
             }
 
-            // Handle Dust Events time format
+            // Handle time format from Dust API
             $start_time = $this->parse_dust_time($event, $event_name);
             $end_time = $this->parse_dust_end_time($event, $event_name);
 
@@ -669,7 +669,7 @@ class DustEvents {
 }
 
 // Initialize the plugin
-new DustEvents();
+new LunacodeDisplayDustData();
 
 // Template functions for theme developers
 
@@ -680,7 +680,7 @@ new DustEvents();
  * @return array
  */
 function dust_get_data($type, $event_name = null) {
-    return DustEvents::get_dust_data($type, $event_name);
+    return LunacodeDisplayDustData::get_dust_data($type, $event_name);
 }
 
 /**
@@ -694,7 +694,7 @@ function dust_get_data($type, $event_name = null) {
 function dust_display_data($type, $event_name = null, $options = array()) {
     $data = dust_get_data($type, $event_name);
     if (!is_wp_error($data) && !empty($data)) {
-        DustEvents::render_data($data, $options, $type);
+        LunacodeDisplayDustData::render_data($data, $options, $type);
     }
 }
 ?>

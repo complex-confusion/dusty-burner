@@ -1,15 +1,15 @@
 /**
- * Dust Events JavaScript
+ * LunaCode Display Dust Data JavaScript
  */
 (function ($) {
   "use strict";
 
   // Initialize when document is ready
   $(document).ready(function () {
-    DustEvents.init();
+    LunacodeDisplayDustData.init();
   });
 
-  var DustEvents = {
+  var LunacodeDisplayDustData = {
     init: function () {
       this.bindEvents();
       this.handleImageErrors();
@@ -33,7 +33,7 @@
 
         var $item = $(this);
         var uid = $item.data("uid");
-        var type = DustEvents.getItemType($item);
+        var type = LunacodeDisplayDustData.getItemType($item);
         var name = $item.find(".dust-" + type + "-name, .dust-" + type + "-title").text();
 
         // Emit custom event for other scripts to listen to
@@ -49,11 +49,11 @@
     },
 
     getItemType: function ($item) {
-      if ($item.hasClass('dust-camps-item')) return 'camps';
-      if ($item.hasClass('dust-art-item')) return 'art';
-      if ($item.hasClass('dust-schedule-item')) return 'schedule';
-      if ($item.hasClass('dust-music-item')) return 'music';
-      return 'unknown';
+      if ($item.hasClass("dust-camps-item")) return "camps";
+      if ($item.hasClass("dust-art-item")) return "art";
+      if ($item.hasClass("dust-schedule-item")) return "schedule";
+      if ($item.hasClass("dust-music-item")) return "music";
+      return "unknown";
     },
 
     handleImageErrors: function () {
@@ -107,10 +107,10 @@
       $searchInputs.on("input", function () {
         clearTimeout(searchTimeout);
         var searchTerm = $(this).val().toLowerCase();
-        var type = $(this).attr('id').replace('dust-', '').replace('-search', '');
+        var type = $(this).attr("id").replace("dust-", "").replace("-search", "");
 
         searchTimeout = setTimeout(function () {
-          DustEvents.filterItems(searchTerm, type);
+          LunacodeDisplayDustData.filterItems(searchTerm, type);
         }, 300);
       });
     },
@@ -119,14 +119,22 @@
       var itemSelector = ".dust-" + type + "-item";
       var nameSelector = ".dust-" + type + "-name, .dust-" + type + "-title";
       var descSelector = ".dust-" + type + "-description";
-      
+
       $(itemSelector).each(function () {
         var $item = $(this);
         var name = $item.find(nameSelector).text().toLowerCase();
         var description = $item.find(descSelector).text().toLowerCase();
-        var camp = $item.find(".dust-" + type + "-camp").text().toLowerCase();
+        var camp = $item
+          .find(".dust-" + type + "-camp")
+          .text()
+          .toLowerCase();
 
-        if (name.includes(searchTerm) || description.includes(searchTerm) || camp.includes(searchTerm) || searchTerm === "") {
+        if (
+          name.includes(searchTerm) ||
+          description.includes(searchTerm) ||
+          camp.includes(searchTerm) ||
+          searchTerm === ""
+        ) {
           $item.show().removeClass("filtered-out");
         } else {
           $item.hide().addClass("filtered-out");
@@ -138,10 +146,10 @@
     },
 
     updateResultsCount: function (type) {
-      type = type || 'camps';
+      type = type || "camps";
       var itemSelector = ".dust-" + type + "-item";
       var counterSelector = ".dust-" + type + "-count";
-      
+
       var total = $(itemSelector).length;
       var visible = $(itemSelector + ":visible").length;
 
@@ -158,7 +166,7 @@
     // Public method to refresh data for any type
     refreshData: function (type, eventName) {
       var $container = $(".dust-" + type + "-container");
-      $container.html('<div class="dust-' + type + '-loading">Loading ' + type + '...</div>');
+      $container.html('<div class="dust-' + type + '-loading">Loading ' + type + "...</div>");
 
       $.ajax({
         url: dust_events_ajax.ajax_url,
@@ -179,19 +187,19 @@
           }
         },
         error: function () {
-          $container.html('<div class="dust-' + type + '-error">Failed to load ' + type + ' data.</div>');
+          $container.html('<div class="dust-' + type + '-error">Failed to load ' + type + " data.</div>");
         },
       });
     },
 
     // Method to get item data for external use
     getItemByUid: function (uid, type) {
-      type = type || 'camps';
-      var $item = $('.dust-' + type + '-item[data-uid="' + uid + '"]');
+      type = type || "camps";
+      var $item = $(".dust-" + type + '-item[data-uid="' + uid + '"]');
       if ($item.length) {
         var nameSelector = ".dust-" + type + "-name, .dust-" + type + "-title";
         var descSelector = ".dust-" + type + "-description";
-        
+
         return {
           uid: uid,
           type: type,
@@ -205,9 +213,9 @@
 
     // Method to highlight a specific item
     highlightItem: function (uid, type) {
-      type = type || 'camps';
+      type = type || "camps";
       $(".dust-" + type + "-item").removeClass("highlighted");
-      var $item = $('.dust-' + type + '-item[data-uid="' + uid + '"]');
+      var $item = $(".dust-" + type + '-item[data-uid="' + uid + '"]');
       if ($item.length) {
         $item.addClass("highlighted");
         $item[0].scrollIntoView({ behavior: "smooth", block: "center" });
@@ -215,26 +223,36 @@
     },
   };
 
-  // Make DustEvents available globally
-  window.DustEvents = DustEvents;
-  
+  // Make LunacodeDisplayDustData available globally
+  window.LunacodeDisplayDustData = LunacodeDisplayDustData;
+
   // Backward compatibility
   window.DustCamps = {
-    init: function() { return DustEvents.init(); },
-    refreshCamps: function(eventName) { return DustEvents.refreshData('camps', eventName); },
-    getCampByUid: function(uid) { return DustEvents.getItemByUid(uid, 'camps'); },
-    highlightCamp: function(uid) { return DustEvents.highlightItem(uid, 'camps'); },
-    filterCamps: function(searchTerm) { return DustEvents.filterItems(searchTerm, 'camps'); }
+    init: function () {
+      return LunacodeDisplayDustData.init();
+    },
+    refreshCamps: function (eventName) {
+      return LunacodeDisplayDustData.refreshData("camps", eventName);
+    },
+    getCampByUid: function (uid) {
+      return LunacodeDisplayDustData.getItemByUid(uid, "camps");
+    },
+    highlightCamp: function (uid) {
+      return LunacodeDisplayDustData.highlightItem(uid, "camps");
+    },
+    filterCamps: function (searchTerm) {
+      return LunacodeDisplayDustData.filterItems(searchTerm, "camps");
+    },
   };
 
   // Custom events that other developers can listen to
   $(document).on("dustItemClicked", function (event, data) {
     // Example: console.log('An item was clicked:', data.name, data.type);
   });
-  
+
   // Backward compatibility event
   $(document).on("dustItemClicked", function (event, data) {
-    if (data.type === 'camps') {
+    if (data.type === "camps") {
       $(document).trigger("dustCampClicked", data);
     }
   });

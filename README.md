@@ -1,9 +1,9 @@
-# Dust Events Plugin for WordPress
+# LunaCode Display Dust Data Plugin for WordPress
 
 This plugin displays [Dust](https://dust.events/)'s complete data including camps, art, schedule, and music from regional Burning Man events or from Burning Man itself.
-It fetches data from all four Dust Events API endpoints and renders it on your WordPress site with options for layout, styling, and interactivity.
+It fetches data from all four Dust API endpoints and renders it on your WordPress site with options for layout, styling, and interactivity.
 
-Many thanks to Dust's creator Damian for providing the app and the API this depends on. Also, much gratitude for the quick support during our regional event's implementation of Dust.
+Many thanks to Dust's creator Damian for creating and supporting the app, and for providing the API this plugin depends on.
 
 ## Quick Start
 
@@ -19,22 +19,26 @@ Many thanks to Dust's creator Damian for providing the app and the API this depe
 ## Available Shortcodes
 
 ### [dust_camps] - Display Camps
+
 Shows camp information with names, descriptions, images, and coordinates.
 
 ### [dust_art] - Display Art
+
 Shows art installations and mutant vehicles with artist information.
 
 ### [dust_schedule] - Display Schedule
+
 Shows scheduled events sorted by camp, then by title.
 
 ### [dust_music] - Display Music/Parties
+
 Shows music events and parties sorted by camp, then by title.
 
 ## Configuration Options
 
 ### Shortcode Parameters (All Shortcodes)
 
-- `event_name`: Your unique event name from Dust Events
+- `event_name`: Your burn's unique name from Dust
 - `layout`: `"grid"` or `"list"` (default: grid)
 - `show_coordinates`: `"true"` or `"false"` (default: true) - For camps/art only
 - `show_images`: `"true"` or `"false"` (default: true)
@@ -70,6 +74,7 @@ Shows music events and parties sorted by camp, then by title.
 ### Custom CSS Classes
 
 **Camps:**
+
 - `.dust-camps-container`: Main container
 - `.dust-camps-item`: Individual camp card
 - `.dust-camps-image`: Image container
@@ -79,6 +84,7 @@ Shows music events and parties sorted by camp, then by title.
 - `.dust-camps-coordinates`: Coordinates display
 
 **Art:**
+
 - `.dust-art-container`: Main container
 - `.dust-art-item`: Individual art card
 - `.dust-art-image`: Image container
@@ -88,6 +94,7 @@ Shows music events and parties sorted by camp, then by title.
 - `.dust-art-description`: Description text
 
 **Schedule:**
+
 - `.dust-schedule-container`: Main container
 - `.dust-schedule-item`: Individual event card
 - `.dust-schedule-content`: Content area
@@ -97,6 +104,7 @@ Shows music events and parties sorted by camp, then by title.
 - `.dust-schedule-description`: Event description
 
 **Music:**
+
 - `.dust-music-container`: Main container
 - `.dust-music-item`: Individual music event card
 - `.dust-music-content`: Content area
@@ -111,19 +119,19 @@ Shows music events and parties sorted by camp, then by title.
 
 ```javascript
 // Refresh data for any type
-DustEvents.refreshData("camps", "event-name");
-DustEvents.refreshData("art", "event-name");
-DustEvents.refreshData("schedule", "event-name");
-DustEvents.refreshData("music", "event-name");
+LunacodeDisplayDustData.refreshData("camps", "event-name");
+LunacodeDisplayDustData.refreshData("art", "event-name");
+LunacodeDisplayDustData.refreshData("schedule", "event-name");
+LunacodeDisplayDustData.refreshData("music", "event-name");
 
 // Get specific item data
-var item = DustEvents.getItemByUid("u-123", "camps");
+var item = LunacodeDisplayDustData.getItemByUid("u-123", "camps");
 
 // Highlight an item
-DustEvents.highlightItem("u-123", "camps");
+LunacodeDisplayDustData.highlightItem("u-123", "camps");
 
 // Filter items
-DustEvents.filterItems("search-term", "camps");
+LunacodeDisplayDustData.filterItems("search-term", "camps");
 ```
 
 ### Custom Events
@@ -261,11 +269,11 @@ dust_display_camps('your-event', array('layout' => 'grid'));
 
 ## License
 
-This implementation is provided as-is for integration with the Dust Events API. Follow WordPress coding standards and GPL licensing if distributing.
+This implementation is provided as-is for integration with the Dust API. Follow WordPress coding standards and GPL licensing if distributing.
 
 ## Support
 
-For issues with the [Dust Events API](https://dust.events/docs/Integrations/api) itself, contact the Dust Events team. For WordPress implementation questions, refer to WordPress documentation and community resources.
+For issues with the [Dust API](https://dust.events/docs/Integrations/api) itself, contact the Dust team. For WordPress implementation questions, refer to WordPress documentation and community resources.
 
 ## Data Sorting
 

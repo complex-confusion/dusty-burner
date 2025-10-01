@@ -1,8 +1,8 @@
 <?php
 /**
- * Template Name: Dust Events Camps Page
+ * Template Name: LunaCode Display Dust Data Camps Page
  *
- * This template demonstrates how to display camps using the Dust Events API
+ * This template demonstrates how to display camps using the Dust API
  * You can copy this to your theme as page-camps.php or create a custom page template
  */
 
