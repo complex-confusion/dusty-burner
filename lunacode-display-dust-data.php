@@ -10,6 +10,24 @@
 
 namespace LunaCode;
 
+// WordPress functions
+use function add_action, add_options_page, add_settings_field, add_settings_section, add_shortcode, admin_url,
+    check_ajax_referer, current_user_can, do_settings_sections, esc_attr, esc_html, esc_url, get_option, get_transient,
+    is_admin, is_wp_error, plugin_dir_url, register_post_type, register_setting, sanitize_text_field, set_transient,
+    settings_fields, shortcode_atts, submit_button, wp_create_nonce, wp_die, wp_enqueue_script, wp_enqueue_style,
+    wp_kses_post, wp_localize_script, wp_remote_get, wp_remote_retrieve_body, wp_remote_retrieve_response_code,
+    wp_send_json_error, wp_send_json_success;
+
+// PHP functions
+use function array_slice, defined, explode, header, implode, in_array, intval, json_decode, json_last_error, md5,
+    ob_get_clean, ob_start, str_replace, strcmp, strip_tags, strpos, trim, uasort, ucfirst, uniqid;
+
+// Classes
+use WP_Error, DateTime, DateInterval, DateTimeZone;
+
+// Constants
+use const ABSPATH, DOING_AJAX, HOUR_IN_SECONDS, JSON_ERROR_NONE;
+
 // Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
@@ -610,7 +628,7 @@ class DisplayDustData {
                     $ics .= "DTEND;TZID=" . $timezone_info['id'] . ":" . $end_time . "\r\n";
                 } else {
                     // Default 1 hour duration if no end time
-                    $dt = \DateTime::createFromFormat('Ymd\THis', $start_time);
+                    $dt = DateTime::createFromFormat('Ymd\THis', $start_time);
                     $dt->add(new DateInterval('PT1H'));
                     $ics .= "DTEND;TZID=" . $timezone_info['id'] . ":" . $dt->format('Ymd\THis') . "\r\n";
                 }
@@ -659,7 +677,7 @@ class DisplayDustData {
     private function parse_dust_time($event, $event_name = null) {
         if (isset($event['occurrence']['start_time'])) {
             $timezone_info = $this->get_event_timezone($event_name);
-            $dt = new \DateTime($event['occurrence']['start_time'], new \DateTimeZone($timezone_info['id']));
+            $dt = new DateTime($event['occurrence']['start_time'], new DateTimeZone($timezone_info['id']));
             return $dt->format('Ymd\THis');
         }
         return null;
@@ -668,7 +686,7 @@ class DisplayDustData {
     private function parse_dust_end_time($event, $event_name = null) {
         if (isset($event['occurrence']['end_time'])) {
             $timezone_info = $this->get_event_timezone($event_name);
-            $dt = new \DateTime($event['occurrence']['end_time'], new \DateTimeZone($timezone_info['id']));
+            $dt = new DateTime($event['occurrence']['end_time'], new DateTimeZone($timezone_info['id']));
             return $dt->format('Ymd\THis');
         }
         return null;
@@ -691,7 +709,7 @@ class DisplayDustData {
 
         $escaped = array(
             'event_name' => esc_attr($event_name),
-            'text' => \esc_html($text),
+            'text' => esc_html($text),
         );
         return "<button class=\"dust-ics-export-btn\" data-event=\"{$escaped['event_name']}\">{$escaped['text']}</button>";
     }
