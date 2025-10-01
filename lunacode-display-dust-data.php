@@ -376,12 +376,12 @@ class DisplayDustData {
         }
 
         ob_start();
-        
+
         // Show export button for schedule if requested
         if ($type === 'schedule' && $atts['show_export_button'] === 'true') {
             echo self::render_ics_button($event_name);
         }
-        
+
         self::render_data($data, $atts, $type);
         return ob_get_clean();
     }
@@ -689,11 +689,12 @@ class DisplayDustData {
         if (empty($event_name)) {
             $event_name = get_option('dust_events_event_name');
         }
-        
-        $button_text = esc_html($text);
-        $data_event = !empty($event_name) ? ' data-event="' . esc_attr($event_name) . '"' : '';
+        $escaped = array(
+            'event_name' => esc_attr($event_name),
+            'text' => \esc_html($text),
+        );
 
-        return '<button class="dust-ics-export-btn"' . $data_event . '>' . $button_text . '</button>';
+        return "<button class=\"dust-ics-export-btn\" data-event=\"{$escaped['event_name']}\">{$escaped['text']}</button>";
     }
 
     /**
