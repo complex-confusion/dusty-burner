@@ -1,2 +1,4 @@
 *.zip
 .vscode/launch.json
+.api-details.md
+.amazonq
