@@ -119,19 +119,19 @@ Shows music events and parties sorted by camp, then by title.
 
 ```javascript
 // Refresh data for any type
-LunacodeDisplayDustData.refreshData("camps", "event-name");
-LunacodeDisplayDustData.refreshData("art", "event-name");
-LunacodeDisplayDustData.refreshData("schedule", "event-name");
-LunacodeDisplayDustData.refreshData("music", "event-name");
+LunaCode.DisplayDustData.refreshData("camps", "event-name");
+LunaCode.DisplayDustData.refreshData("art", "event-name");
+LunaCode.DisplayDustData.refreshData("schedule", "event-name");
+LunaCode.DisplayDustData.refreshData("music", "event-name");
 
 // Get specific item data
-var item = LunacodeDisplayDustData.getItemByUid("u-123", "camps");
+var item = LunaCode.DisplayDustData.getItemByUid("u-123", "camps");
 
 // Highlight an item
-LunacodeDisplayDustData.highlightItem("u-123", "camps");
+LunaCode.DisplayDustData.highlightItem("u-123", "camps");
 
 // Filter items
-LunacodeDisplayDustData.filterItems("search-term", "camps");
+LunaCode.DisplayDustData.filterItems("search-term", "camps");
 ```
 
 ### Custom Events

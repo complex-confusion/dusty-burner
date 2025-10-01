@@ -6,10 +6,11 @@
 
   // Initialize when document is ready
   $(document).ready(function () {
-    LunacodeDisplayDustData.init();
+    LunaCode.DisplayDustData.init();
   });
 
-  var LunacodeDisplayDustData = {
+  var LunaCode = {
+    DisplayDustData: {
     init: function () {
       this.bindEvents();
       this.handleImageErrors();
@@ -33,7 +34,7 @@
 
         var $item = $(this);
         var uid = $item.data("uid");
-        var type = LunacodeDisplayDustData.getItemType($item);
+        var type = LunaCode.DisplayDustData.getItemType($item);
         var name = $item.find(".dust-" + type + "-name, .dust-" + type + "-title").text();
 
         // Emit custom event for other scripts to listen to
@@ -110,7 +111,7 @@
         var type = $(this).attr("id").replace("dust-", "").replace("-search", "");
 
         searchTimeout = setTimeout(function () {
-          LunacodeDisplayDustData.filterItems(searchTerm, type);
+          LunaCode.DisplayDustData.filterItems(searchTerm, type);
         }, 300);
       });
     },
@@ -220,41 +221,17 @@
         $item.addClass("highlighted");
         $item[0].scrollIntoView({ behavior: "smooth", block: "center" });
       }
-    },
+    }
   };
 
-  // Make LunacodeDisplayDustData available globally
-  window.LunacodeDisplayDustData = LunacodeDisplayDustData;
-
-  // Backward compatibility
-  window.DustCamps = {
-    init: function () {
-      return LunacodeDisplayDustData.init();
-    },
-    refreshCamps: function (eventName) {
-      return LunacodeDisplayDustData.refreshData("camps", eventName);
-    },
-    getCampByUid: function (uid) {
-      return LunacodeDisplayDustData.getItemByUid(uid, "camps");
-    },
-    highlightCamp: function (uid) {
-      return LunacodeDisplayDustData.highlightItem(uid, "camps");
-    },
-    filterCamps: function (searchTerm) {
-      return LunacodeDisplayDustData.filterItems(searchTerm, "camps");
-    },
-  };
+  // Make LunaCode available globally with safe property assignment
+  window.LunaCode = Object.assign({}, window.LunaCode, {
+    DisplayDustData: LunaCode.DisplayDustData
+  });
 
   // Custom events that other developers can listen to
   $(document).on("dustItemClicked", function (event, data) {
     // Example: console.log('An item was clicked:', data.name, data.type);
-  });
-
-  // Backward compatibility event
-  $(document).on("dustItemClicked", function (event, data) {
-    if (data.type === "camps") {
-      $(document).trigger("dustCampClicked", data);
-    }
   });
 })(jQuery);
 

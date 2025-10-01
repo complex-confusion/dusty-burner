@@ -8,14 +8,14 @@
  * Text Domain: lunacode-display-dust-data
  */
 
-namespace LunacodeDisplayDustData;
+namespace LunaCode;
 
 // Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
 }
 
-class LunacodeDisplayDustData {
+class DisplayDustData {
     const PLUGIN_VERSION = '0.2.0';
     const IMAGE_BASE_URL = 'https://data.dust.events/';
     const API_BASE_URL = 'https://data.dust.events/';
@@ -671,7 +671,7 @@ class LunacodeDisplayDustData {
 }
 
 // Initialize the plugin
-new LunacodeDisplayDustData();
+new DisplayDustData();
 
 // Template functions for theme developers (global namespace)
 
@@ -682,7 +682,7 @@ new LunacodeDisplayDustData();
  * @return array
  */
 function lunacode_display_dust_data_get($type, $event_name = null) {
-    return \LunacodeDisplayDustData\LunacodeDisplayDustData::get_dust_data($type, $event_name);
+    return \LunaCode\DisplayDustData::get_dust_data($type, $event_name);
 }
 
 /**
@@ -696,6 +696,6 @@ function lunacode_display_dust_data_get($type, $event_name = null) {
 function lunacode_display_dust_data_render($type, $event_name = null, $options = array()) {
     $data = lunacode_display_dust_data_get($type, $event_name);
     if (!is_wp_error($data) && !empty($data)) {
-        \LunacodeDisplayDustData\LunacodeDisplayDustData::render_data($data, $options, $type);
+        \LunaCode\DisplayDustData::render_data($data, $options, $type);
     }
 }
