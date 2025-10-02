@@ -1192,20 +1192,20 @@ class DisplayDustData {
         if ($show_export_buttons === 'true' || $show_export_buttons === 'all') {
             return self::render_ics_button($event_name) . ' ' . self::render_csv_button($event_name) . ' ' . self::render_morse_button($event_name);
         }
-        
+
         if ($show_export_buttons === 'false' || $show_export_buttons === 'none' || empty($show_export_buttons)) {
             return '';
         }
-        
+
         // Parse comma-separated list
         $buttons = array();
         $requested = array_map('trim', explode(',', strtolower($show_export_buttons)));
-        
+
         // If 'none' is present, return empty regardless of other values
         if (in_array('none', $requested)) {
             return '';
         }
-        
+
         foreach ($requested as $type) {
             switch ($type) {
                 case 'ics':
@@ -1221,7 +1221,7 @@ class DisplayDustData {
                     return self::render_ics_button($event_name) . ' ' . self::render_csv_button($event_name) . ' ' . self::render_morse_button($event_name);
             }
         }
-        
+
         return implode(' ', $buttons);
     }
 
