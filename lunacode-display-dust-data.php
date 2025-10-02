@@ -879,7 +879,7 @@ class DisplayDustData {
                 isset($event['occurrence']['short']) ? $event['occurrence']['short'] : '',
                 isset($event['occurrence']['long']) ? $event['occurrence']['long'] : '',
                 isset($event['occurrence']['brief']) ? $event['occurrence']['brief'] : '',
-                $event['imageUrl'] ?? '',
+                isset($event['imageUrl']) ? self::get_image_url($event['imageUrl']) : '',
                 isset($event['event_type']['label']) ? $event['event_type']['label'] : '',
                 strip_tags($event['description'] ?? '')
             );
