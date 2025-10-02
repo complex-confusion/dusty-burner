@@ -10,7 +10,7 @@
  * @copyright         2025 LunaCode
  * @license           GPL-2.0-or-later
  * @link              https://lunacode.com
- * @version           0.4.0
+ * @version           0.5.0
  *
  * @wordpress-plugin
  * Plugin Name:       LunaCode Display Dust Data
