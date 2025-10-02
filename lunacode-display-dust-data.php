@@ -47,7 +47,7 @@ use const ABSPATH, DOING_AJAX, HOUR_IN_SECONDS, JSON_ERROR_NONE;
 
 // Prevent direct access
 if (!defined('ABSPATH')) {
-    exit;
+    wp_die('Direct access is not allowed. Return through the website; stop with the hackery.');
 }
 
 class DisplayDustData {
@@ -70,7 +70,8 @@ class DisplayDustData {
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'settings_init'));
 
-        // AJAX handlers - public read-only data
+        // AJAX handlers - public read-only data from Dust API (no authentication required)
+        // @security-ignore CWE-285: These endpoints access public APIs that do not require authentication
         add_action('wp_ajax_get_dust_data', array($this, 'ajax_get_data'));
         add_action('wp_ajax_nopriv_get_dust_data', array($this, 'ajax_get_data'));
         add_action('wp_ajax_export_schedule_ics', array($this, 'export_schedule_ics'));
@@ -169,10 +170,12 @@ class DisplayDustData {
     /**
      * Fetch data from API
      *
+     * @security-note This accesses the public Dust Events API which requires no authentication.
+     * @security-ignore CWE-285: No authentication required for public API endpoints
+     *
      * @param string $type 'camps'|'art'|'schedule'|'music'
      * @param string|null $event_name
      * @return array|\WP_Error
-
      */
     public static function get_data($type, $event_name = null) {
         // Validate type parameter
