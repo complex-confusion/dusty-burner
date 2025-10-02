@@ -23,19 +23,27 @@ Many thanks to Dust's creator Damian for creating and supporting the app, and fo
 
 Shows camp information with names, descriptions, images, and coordinates.
 
+**Parameters:** `event_name`, `layout`, `show_coordinates`, `show_images`, `per_page`
+
 ### [dust_art] - Display Art
 
 Shows art installations and mutant vehicles with artist information.
 
+**Parameters:** `event_name`, `layout`, `show_coordinates`, `show_images`, `per_page`
+
 ### [dust_schedule] - Display Schedule
 
 Shows scheduled events sorted by camp, then by title.
+
+**Parameters:** `event_name`, `layout`, `show_images`, `per_page`, `show_export_buttons`, `display`
 
 **Tabbed Display**: Use `display="tabs"` to show events organized by day with an "Every Day" tab for recurring events. Each day tab includes both daily recurring events and day-specific events.
 
 ### [dust_music] - Display Music/Parties
 
 Shows music events and parties sorted by camp, then by title.
+
+**Parameters:** `event_name`, `layout`, `show_images`, `per_page`
 
 ### [dust_schedule_ics_button] - ICS Export Button
 
@@ -69,6 +77,23 @@ Displays a button to export schedule data as a CSV file.
 [dust_schedule_csv_button]
 [dust_schedule_csv_button text="Download CSV"]
 [dust_schedule_csv_button text="Get Spreadsheet" event_name="myburn2024"]
+```
+
+### [dust_schedule_morse_button] - Morse Code Export Button
+
+Displays a button to export schedule data as a Morse code text file.
+
+**Parameters:**
+
+- `text`: Custom button text (default: "📡 Export to Morse")
+- `event_name`: Specific event name (optional)
+
+**Examples:**
+
+```
+[dust_schedule_morse_button]
+[dust_schedule_morse_button text="Download Morse"]
+[dust_schedule_morse_button text="Get Morse Code" event_name="myburn2024"]
 ```
 
 ## Configuration Options
@@ -314,6 +339,8 @@ echo dust_schedule_ics_button('Custom Text');
 echo dust_schedule_ics_button('Download Events', 'myburn2024');
 echo dust_schedule_csv_button();
 echo dust_schedule_csv_button('Download CSV', 'myburn2024');
+echo dust_schedule_morse_button();
+echo dust_schedule_morse_button('Download Morse', 'myburn2024');
 
 
 ```
