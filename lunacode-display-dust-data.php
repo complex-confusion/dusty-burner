@@ -866,7 +866,7 @@ class DisplayDustData {
         $output = fopen('php://temp', 'r+');
 
         // CSV headers
-        fputcsv($output, array('Title', 'Camp', 'Location', 'Day', 'Start Time', 'End Time', 'Description'));
+        fputcsv($output, array('Title', 'Camp', 'Location', 'Day', 'Start Time', 'End Time', 'Short Time', 'Long Time', 'Brief Time', 'Image URL', 'Categories', 'Description'));
 
         foreach ($schedule_data as $event) {
             $row = array(
@@ -876,6 +876,11 @@ class DisplayDustData {
                 $event['day'] ?? '',
                 isset($event['occurrence']['start_time']) ? $event['occurrence']['start_time'] : '',
                 isset($event['occurrence']['end_time']) ? $event['occurrence']['end_time'] : '',
+                isset($event['occurrence']['short']) ? $event['occurrence']['short'] : '',
+                isset($event['occurrence']['long']) ? $event['occurrence']['long'] : '',
+                isset($event['occurrence']['brief']) ? $event['occurrence']['brief'] : '',
+                $event['imageUrl'] ?? '',
+                isset($event['event_type']['label']) ? $event['event_type']['label'] : '',
                 strip_tags($event['description'] ?? '')
             );
             fputcsv($output, $row);
