@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LunaCode Display Dust Data
  * Description: Display camps, art, schedule, and music from the Dust API
- * Version: 0.2.0
+ * Version: 0.3.0
  * Author: Complex Confusion
  * License: GPL2
  * Text Domain: lunacode-display-dust-data
@@ -889,7 +889,7 @@ class DisplayDustData {
         rewind($output);
         $csv_content = stream_get_contents($output);
         fclose($output);
-        
+
         return $csv_content;
     }
 
