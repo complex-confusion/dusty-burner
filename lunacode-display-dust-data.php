@@ -1003,16 +1003,17 @@ class DisplayDustData {
 
         foreach ($schedule_data as $event) {
             $text = strtoupper(strip_tags($event['title'] ?? ''));
-            $morse_line = '';
+            // This is safe b/c it's generated from a controlled character set, and unmapped characters were discarded.
+            $morse_line_safe = '';
             for ($i = 0; $i < strlen($text); $i++) {
                 $char = $text[$i];
                 if ($char === ' ') {
-                    $morse_line .= '  ';
+                    $morse_line_safe .= '  ';
                 } elseif (isset($morse_map[$char])) {
-                    $morse_line .= $morse_map[$char] . ' ';
+                    $morse_line_safe .= $morse_map[$char] . ' ';
                 }
             }
-            fwrite($output, trim($morse_line) . "\n");
+            fwrite($output, trim($morse_line_safe) . "\n");
         }
 
         rewind($output);
@@ -1038,7 +1039,8 @@ class DisplayDustData {
         $ics_content = $this->generate_ics($data, $event_name);
 
         header('Content-Type: text/calendar; charset=utf-8');
-        header('Content-Disposition: attachment; filename="' . $event_name . '-schedule.ics"');
+        $safe_filename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $event_name);
+        header('Content-Disposition: attachment; filename="' . $safe_filename . '-schedule.ics"');
         echo $ics_content;
         wp_die();
     }
