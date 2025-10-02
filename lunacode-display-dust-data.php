@@ -454,8 +454,11 @@ class DisplayDustData {
             self::render_schedule_tabs($data, $atts, $event_name);
         } else {
             // Show export buttons for schedule if requested
-            if ($type === 'schedule' && $atts['show_export_buttons'] === 'true') {
-                echo '<div class="lunacode-export-buttons">' . self::render_ics_button() . ' ' . self::render_csv_button() . ' ' . self::render_morse_button() . '</div>';
+            if ($type === 'schedule') {
+                $export_buttons = self::get_export_buttons($atts['show_export_buttons'], $event_name);
+                if (!empty($export_buttons)) {
+                    echo '<div class="lunacode-export-buttons">' . $export_buttons . '</div>';
+                }
             }
             self::render_data($data, $atts, $type);
         }
@@ -574,8 +577,11 @@ class DisplayDustData {
         echo '<div class="dust-schedule-tabs-container" id="' . esc_attr($container_id) . '" data-event="' . esc_attr($event_name) . '">';
 
         // Export buttons if requested
-        if (isset($options['show_export_buttons']) && $options['show_export_buttons'] === 'true') {
-            echo '<div class="lunacode-export-buttons">' . self::render_ics_button($event_name) . ' ' . self::render_csv_button($event_name) . ' ' . self::render_morse_button($event_name) . '</div>';
+        if (isset($options['show_export_buttons'])) {
+            $export_buttons = self::get_export_buttons($options['show_export_buttons'], $event_name);
+            if (!empty($export_buttons)) {
+                echo '<div class="lunacode-export-buttons">' . $export_buttons . '</div>';
+            }
         }
 
         // Tab navigation
@@ -1156,6 +1162,51 @@ class DisplayDustData {
             'text' => esc_html($text),
         );
         return "<button class=\"dust-morse-export-btn\" data-event=\"{$escaped['event_name']}\">{$escaped['text']}</button>";
+    }
+
+    /**
+     * Parse export buttons parameter and return HTML for requested buttons
+     *
+     * @param string $show_export_buttons Parameter value
+     * @param string $event_name Event name
+     * @return string HTML for export buttons
+     */
+    private static function get_export_buttons($show_export_buttons, $event_name = '') {
+        // Handle legacy boolean values
+        if ($show_export_buttons === 'true' || $show_export_buttons === 'all') {
+            return self::render_ics_button($event_name) . ' ' . self::render_csv_button($event_name) . ' ' . self::render_morse_button($event_name);
+        }
+        
+        if ($show_export_buttons === 'false' || $show_export_buttons === 'none' || empty($show_export_buttons)) {
+            return '';
+        }
+        
+        // Parse comma-separated list
+        $buttons = array();
+        $requested = array_map('trim', explode(',', strtolower($show_export_buttons)));
+        
+        // If 'none' is present, return empty regardless of other values
+        if (in_array('none', $requested)) {
+            return '';
+        }
+        
+        foreach ($requested as $type) {
+            switch ($type) {
+                case 'ics':
+                    $buttons[] = self::render_ics_button($event_name);
+                    break;
+                case 'csv':
+                    $buttons[] = self::render_csv_button($event_name);
+                    break;
+                case 'morse':
+                    $buttons[] = self::render_morse_button($event_name);
+                    break;
+                case 'all':
+                    return self::render_ics_button($event_name) . ' ' . self::render_csv_button($event_name) . ' ' . self::render_morse_button($event_name);
+            }
+        }
+        
+        return implode(' ', $buttons);
     }
 
     /**

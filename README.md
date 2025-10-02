@@ -13,7 +13,9 @@ Many thanks to Dust's creator Damian for creating and supporting the app, and fo
    [dust_camps layout="grid" show_coordinates="false" show_images="true"]
    [dust_art layout="grid" show_images="true"]
    [dust_schedule layout="list"]
-   [dust_schedule display="tabs" layout="grid" show_export_buttons="true" ]
+   [dust_schedule display="tabs" layout="grid" show_export_buttons="all" ]
+   [dust_schedule layout="list" show_export_buttons="csv,ics"]
+   [dust_schedule layout="grid" show_export_buttons="morse"]
    [dust_music layout="list"]
    ```
 
@@ -36,6 +38,22 @@ Shows art installations and mutant vehicles with artist information.
 Shows scheduled events sorted by camp, then by title.
 
 **Parameters:** `event_name`, `layout`, `show_images`, `per_page`, `show_export_buttons`, `display`
+
+**Export Buttons**: The `show_export_buttons` parameter accepts:
+
+- `"all"` or `"true"`: Show all export buttons (ICS, CSV, Morse)
+- `"none"` or `"false"`: Show no export buttons
+- `"csv"`, `"ics"`, `"morse"`: Show specific export button
+- Comma-separated list: `"csv,ics"`, `"ics,morse"`, etc.
+
+**Examples:**
+
+```
+[dust_schedule show_export_buttons="all"]
+[dust_schedule show_export_buttons="csv,ics"]
+[dust_schedule show_export_buttons="morse"]
+[dust_schedule show_export_buttons="none"]
+```
 
 **Tabbed Display**: Use `display="tabs"` to show events organized by day with an "Every Day" tab for recurring events. Each day tab includes both daily recurring events and day-specific events.
 
@@ -105,7 +123,7 @@ Displays a button to export schedule data as a Morse code text file.
 - `show_coordinates`: `"true"` or `"false"` (default: true) - For camps/art only
 - `show_images`: `"true"` or `"false"` (default: true)
 - `per_page`: Number of items to show, `-1` for all (default: -1)
-- `show_export_buttons`: `"true"` or `"false"` (default: false) - For schedule only
+- `show_export_buttons`: `"csv"`, `"ics"`, `"morse"`, `"all"`, `"none"`, or comma-separated list (default: false) - For schedule only
 - `display`: `"all"` or `"tabs"` (default: all) - For schedule only
 
 ### Display Layouts
