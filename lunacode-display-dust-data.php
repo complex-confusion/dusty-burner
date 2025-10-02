@@ -30,13 +30,13 @@ namespace LunaCode;
 // WordPress functions
 use function add_action, add_options_page, add_settings_field, add_settings_section, add_shortcode, admin_url,
     check_ajax_referer, current_user_can, do_settings_sections, esc_attr, esc_html, esc_url, get_option, get_transient,
-    is_admin, is_wp_error, plugin_dir_url, register_post_type, register_setting, sanitize_text_field, set_transient,
+    is_admin, is_user_logged_in, is_wp_error, plugin_dir_url, register_post_type, register_setting, sanitize_text_field, set_transient,
     settings_fields, shortcode_atts, submit_button, wp_create_nonce, wp_die, wp_enqueue_script, wp_enqueue_style,
     wp_kses_post, wp_localize_script, wp_remote_get, wp_remote_retrieve_body, wp_remote_retrieve_response_code,
     wp_send_json_error, wp_send_json_success;
 
 // PHP functions
-use function array_slice, defined, explode, header, implode, in_array, intval, json_decode, json_last_error, md5,
+use function array_keys, array_slice, defined, explode, header, implode, in_array, intval, json_decode, json_last_error, md5,
     ob_get_clean, ob_start, str_replace, strcmp, strip_tags, strpos, trim, uasort, ucfirst, uniqid;
 
 // Classes
@@ -765,20 +765,24 @@ class DisplayDustData {
      * @return array Array of days the event repeats on
      */
     public static function get_repeat_days($title, $current_day, $all_data) {
-        $repeat_days = array();
+        static $repeat_cache = array();
+        $cache_key = md5($title . '|' . $current_day);
 
+        if (isset($repeat_cache[$cache_key])) {
+            return $repeat_cache[$cache_key];
+        }
+
+        $repeat_days = array();
         foreach ($all_data as $event) {
-            if (isset($event['title']) && $event['title'] === $title &&
-                isset($event['day']) && $event['day'] !== $current_day) {
-                $repeat_days[] = $event['day'];
+            if ($event['title'] === $title && !empty($event['day']) && $event['day'] !== $current_day) {
+                $repeat_days[$event['day']] = true;
             }
         }
 
-        // Remove duplicates and sort
-        $repeat_days = array_unique($repeat_days);
-        sort($repeat_days);
-
-        return $repeat_days;
+        $result = array_keys($repeat_days);
+        sort($result);
+        $repeat_cache[$cache_key] = $result;
+        return $result;
     }
 
     /**
@@ -789,20 +793,23 @@ class DisplayDustData {
      * @return array Array of all days the event appears on
      */
     public static function get_all_repeat_days($title, $all_data) {
-        $all_days = array();
+        static $all_days_cache = array();
 
+        if (isset($all_days_cache[$title])) {
+            return $all_days_cache[$title];
+        }
+
+        $all_days = array();
         foreach ($all_data as $event) {
-            if (isset($event['title']) && $event['title'] === $title &&
-                isset($event['day']) && !empty($event['day'])) {
-                $all_days[] = $event['day'];
+            if ($event['title'] === $title && !empty($event['day'])) {
+                $all_days[$event['day']] = true;
             }
         }
 
-        // Remove duplicates and sort
-        $all_days = array_unique($all_days);
-        sort($all_days);
-
-        return $all_days;
+        $result = array_keys($all_days);
+        sort($result);
+        $all_days_cache[$title] = $result;
+        return $result;
     }
 
     /**
