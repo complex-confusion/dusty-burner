@@ -844,25 +844,23 @@ class DisplayDustData {
         if ($location) echo '<div class="dust-schedule-location"><strong>Location:</strong> ' . esc_html($location) . '</div>';
 
         if ($day) {
-            if ($tab_context === 'repeating' && $all_data && !empty($title)) {
-                // On Repeating tab: show "Repeats on [list of all days]"
-                $all_days = self::get_all_repeat_days($title, $all_data);
-                if (!empty($all_days)) {
-                    $day_text = 'Repeats on ' . esc_html(implode(', ', $all_days));
+            $day_text = esc_html($day);
+            if ($all_data && !empty($title)) {
+                if ($tab_context === 'repeating') {
+                    // On Repeating tab: show "Repeats on [list of all days]"
+
+                    $all_days = self::get_all_repeat_days($title, $all_data);
+                    if (count($all_days) > 1) {
+                        $day_text = 'Repeats on ' . esc_html(implode(', ', $all_days));
+                    }
                 } else {
-                    $day_text = esc_html($day);
-                }
-            } else {
-                // On day tabs: show "Thursday (repeats on Friday, Saturday, Sunday)"
-                $day_text = esc_html($day);
-                if ($all_data && !empty($title)) {
+                    // On day tabs: show "Thursday (repeats on Friday, Saturday, Sunday)"
                     $repeat_days = self::get_repeat_days($title, $day, $all_data);
                     if (!empty($repeat_days)) {
                         $day_text .= ' (repeats on ' . esc_html(implode(', ', $repeat_days)) . ')';
                     }
                 }
             }
-
             echo '<div class="dust-schedule-day"><strong>Day:</strong> ' . $day_text . '</div>';
         }
 
