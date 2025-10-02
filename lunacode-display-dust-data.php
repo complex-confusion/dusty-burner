@@ -585,11 +585,20 @@ class DisplayDustData {
         }
 
         // Tab navigation
-        echo '<div class="dust-schedule-tab-nav">';
+        echo '<div class="dust-schedule-tab-nav" role="tablist" aria-label="Schedule by day">';
         $first = true;
         foreach ($tabs as $tab_key => $tab_data) {
-            $active_class = $first ? ' active' : '';
-            echo '<button class="dust-schedule-tab-btn' . $active_class . '" data-tab="' . esc_attr($tab_key) . '">' . esc_html($tab_data['label']) . '</button>';
+            $tab_id = $container_id . '-tab-' . $tab_key;
+            $panel_id = $container_id . '-panel-' . $tab_key;
+            $selected = $first ? 'true' : 'false';
+            echo '<button class="dust-schedule-tab-btn' . ($first ? ' active' : '') . '" '
+                . 'role="tab" '
+                . 'aria-selected="' . $selected . '" '
+                . 'aria-controls="' . esc_attr($panel_id) . '" '
+                . 'id="' . esc_attr($tab_id) . '" '
+                . 'data-tab="' . esc_attr($tab_key) . '" '
+                . 'tabindex="' . ($first ? '0' : '-1') . '">'
+                . esc_html($tab_data['label']) . '</button>';
             $first = false;
         }
         echo '</div>';
@@ -598,9 +607,16 @@ class DisplayDustData {
         echo '<div class="dust-schedule-tab-content">';
         $first = true;
         foreach ($tabs as $tab_key => $tab_data) {
-            $active_class = $first ? ' active' : '';
+            $tab_id = $container_id . '-tab-' . $tab_key;
+            $panel_id = $container_id . '-panel-' . $tab_key;
             $context = ($tab_key === 'repeating') ? 'repeating' : 'day';
-            echo '<div class="dust-schedule-tab-pane' . $active_class . '" data-tab="' . esc_attr($tab_key) . '" style="display: ' . ($first ? 'block' : 'none') . ';">';
+            echo '<div class="dust-schedule-tab-pane' . ($first ? ' active' : '') . '" '
+                . 'role="tabpanel" '
+                . 'aria-labelledby="' . esc_attr($tab_id) . '" '
+                . 'id="' . esc_attr($panel_id) . '" '
+                . 'data-tab="' . esc_attr($tab_key) . '" '
+                . 'tabindex="0" '
+                . 'style="display: ' . ($first ? 'block' : 'none') . ';">';
             self::render_data($tab_data['events'], $options, 'schedule', $context);
             echo '</div>';
             $first = false;

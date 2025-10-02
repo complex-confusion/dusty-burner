@@ -252,21 +252,77 @@
           }
         });
         
-        // Handle tab switching
+        // Handle tab switching with accessibility
         $(document).on('click', '.dust-schedule-tab-btn', function(e) {
           e.preventDefault();
-          var $btn = $(this);
-          var tabId = $btn.data('tab');
-          var $container = $btn.closest('.dust-schedule-tabs-container');
-          
-          // Update tab button states
-          $btn.siblings('.dust-schedule-tab-btn').removeClass('active');
-          $btn.addClass('active');
-          
-          // Show corresponding tab content
-          $container.find('.dust-schedule-tab-pane').removeClass('active').hide();
-          $container.find('.dust-schedule-tab-pane[data-tab="' + tabId + '"]').addClass('active').show();
+          LunaCode.DisplayDustData.activateTab($(this));
         });
+        
+        // Handle keyboard navigation for tabs
+        $(document).on('keydown', '.dust-schedule-tab-btn', function(e) {
+          var $tabs = $(this).closest('.dust-schedule-tab-nav').find('.dust-schedule-tab-btn');
+          var currentIndex = $tabs.index(this);
+          var $target = null;
+          
+          switch(e.which) {
+            case 37: // Left arrow
+            case 38: // Up arrow
+              e.preventDefault();
+              $target = currentIndex > 0 ? $tabs.eq(currentIndex - 1) : $tabs.last();
+              break;
+            case 39: // Right arrow
+            case 40: // Down arrow
+              e.preventDefault();
+              $target = currentIndex < $tabs.length - 1 ? $tabs.eq(currentIndex + 1) : $tabs.first();
+              break;
+            case 36: // Home
+              e.preventDefault();
+              $target = $tabs.first();
+              break;
+            case 35: // End
+              e.preventDefault();
+              $target = $tabs.last();
+              break;
+            case 13: // Enter
+            case 32: // Space
+              e.preventDefault();
+              LunaCode.DisplayDustData.activateTab($(this));
+              return;
+          }
+          
+          if ($target) {
+            // Update tabindex and focus
+            $tabs.attr('tabindex', '-1');
+            $target.attr('tabindex', '0').focus();
+          }
+        });
+      },
+      
+      // Activate a tab with proper accessibility handling
+      activateTab: function($btn) {
+        var tabId = $btn.data('tab');
+        var $container = $btn.closest('.dust-schedule-tabs-container');
+        var $tabNav = $btn.closest('.dust-schedule-tab-nav');
+        
+        // Update ARIA attributes and visual states
+        $tabNav.find('.dust-schedule-tab-btn')
+          .removeClass('active')
+          .attr('aria-selected', 'false')
+          .attr('tabindex', '-1');
+        
+        $btn.addClass('active')
+          .attr('aria-selected', 'true')
+          .attr('tabindex', '0');
+        
+        // Show corresponding tab content and focus it
+        var $panels = $container.find('.dust-schedule-tab-pane');
+        $panels.removeClass('active').hide();
+        
+        var $activePanel = $container.find('.dust-schedule-tab-pane[data-tab="' + tabId + '"]');
+        $activePanel.addClass('active').show();
+        
+        // Move focus to the start of the new content for screen readers
+        $activePanel.focus();
       },
 
       // Public method to toggle schedule display
@@ -286,7 +342,7 @@
         if ($container.length) {
           var $btn = $container.find('.dust-schedule-tab-btn[data-tab="' + tabId + '"]');
           if ($btn.length) {
-            $btn.click();
+            LunaCode.DisplayDustData.activateTab($btn);
           }
         }
       },

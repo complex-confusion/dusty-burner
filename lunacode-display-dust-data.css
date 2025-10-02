@@ -387,9 +387,21 @@
     color: #333;
 }
 
+.dust-schedule-tab-btn:focus {
+    outline: 2px solid #005a9c;
+    outline-offset: 2px;
+    background: #f8f9fa;
+    color: #333;
+}
+
 .dust-schedule-tab-btn.active {
     background: #007cba;
     color: white;
+}
+
+.dust-schedule-tab-btn.active:focus {
+    outline: 2px solid #ffffff;
+    outline-offset: -2px;
 }
 
 .dust-schedule-tab-btn.active::after {
@@ -400,6 +412,10 @@
     right: 0;
     height: 2px;
     background: #007cba;
+}
+
+.dust-schedule-tab-pane:focus {
+    outline: none;
 }
 
 .dust-schedule-tab-content {

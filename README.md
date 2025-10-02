@@ -57,6 +57,8 @@ Shows scheduled events sorted by camp, then by title.
 
 **Tabbed Display**: Use `display="tabs"` to show events organized by day with an "Every Day" tab for recurring events. Each day tab includes both daily recurring events and day-specific events.
 
+**Accessibility**: The tabbed interface meets WCAG AA standards with proper ARIA attributes, keyboard navigation (arrow keys, Home/End), and focus management.
+
 ### [dust_music] - Display Music/Parties
 
 Shows music events and parties sorted by camp, then by title.
@@ -370,37 +372,15 @@ echo dust_schedule_morse_button('Download Morse', 'myburn2024');
 - AJAX requests use nonces for security
 - Remote API calls have timeout limits
 
-## Browser Support
+## Accessibility
 
-- Modern browsers (Chrome, Firefox, Safari, Edge)
-- IE11+ for basic functionality
-- Progressive enhancement for advanced features
+The plugin meets WCAG AA accessibility standards:
 
-## License
-
-This implementation is provided as-is for integration with the Dust API. Follow WordPress coding standards and GPL licensing if distributing.
-
-## Support
-
-For issues with the [Dust API](https://dust.events/docs/Integrations/api) itself, contact the Dust team. For WordPress implementation questions, refer to WordPress documentation and community resources.
-
-## Data Sorting
-
-- **Camps & Art**: Sorted alphabetically by name
-- **Schedule & Music**: Sorted by camp name (using `camp` or `hosted_by_camp` fields), then by title
-- **Schedule Tabs**: Within each tab, events are sorted by:
-  1. All-day events first
-  2. Start time (earliest first)
-  3. Event title (alphabetical)
-
-## API Endpoints Used
-
-- `https://data.dust.events/[event-name]/camps.json`
-- `https://data.dust.events/[event-name]/art.json`
-- `https://data.dust.events/[event-name]/schedule.json`
-- `https://data.dust.events/[event-name]/music.json`ed and validated
-- AJAX requests use nonces for security
-- Remote API calls have timeout limits
+- **Tabbed Interface**: Proper ARIA roles (`tablist`, `tab`, `tabpanel`), states (`aria-selected`), and relationships (`aria-labelledby`, `aria-controls`)
+- **Keyboard Navigation**: Full keyboard support with arrow keys, Home/End, Enter/Space
+- **Focus Management**: Focus moves to tab content when switching tabs, preventing users from getting lost
+- **Screen Reader Support**: Proper labeling and announcements for all interactive elements
+- **Visual Focus Indicators**: Clear focus outlines that meet contrast requirements
 
 ## Browser Support
 
