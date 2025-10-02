@@ -500,7 +500,7 @@ class DisplayDustData {
      * @return void
      */
     public static function render_single_item($item, $show_coordinates = true, $show_images = true, $type = 'camps', $all_data = null, $tab_context = 'day') {
-        echo '<div class="dust-' . esc_attr($type) . '-item" data-uid="' . esc_attr($item['uid']) . '">';
+        echo '<article class="dust-' . esc_attr($type) . '-item" data-uid="' . esc_attr($item['uid']) . '" role="article" tabindex="0">';
 
         if ($type === 'camps' || $type === 'art') {
             self::render_camps_art($item, $show_coordinates, $show_images, $type);
@@ -510,7 +510,7 @@ class DisplayDustData {
             self::render_music($item);
         }
 
-        echo '</div>';
+        echo '</article>';
     }
 
     /**
@@ -540,7 +540,7 @@ class DisplayDustData {
 
         if ($image_url) {
             echo '<div class="dust-' . esc_attr($type) . '-image">';
-            echo '<img src="' . esc_url($image_url) . '" alt="' . esc_attr($name) . '" loading="lazy" />';
+            echo '<img src="' . esc_url($image_url) . '" alt="" role="presentation" loading="lazy" />';
             echo '</div>';
         }
 
@@ -823,7 +823,7 @@ class DisplayDustData {
 
         if ($image_url) {
             echo '<div class="dust-schedule-image">';
-            echo '<img src="' . esc_url($image_url) . '" alt="' . esc_attr($title) . '" loading="lazy" />';
+            echo '<img src="' . esc_url($image_url) . '" alt="" role="presentation" loading="lazy" />';
             echo '</div>';
         }
 
@@ -1141,7 +1141,7 @@ class DisplayDustData {
             'event_name' => esc_attr($event_name),
             'text' => esc_html($text),
         );
-        return "<button class=\"dust-ics-export-btn\" data-event=\"{$escaped['event_name']}\">{$escaped['text']}</button>";
+        return "<button class=\"dust-ics-export-btn\" data-event=\"{$escaped['event_name']}\" aria-label=\"Export schedule to calendar file\" type=\"button\">{$escaped['text']}</button>";
     }
 
     /**
@@ -1159,7 +1159,7 @@ class DisplayDustData {
             'event_name' => esc_attr($event_name),
             'text' => esc_html($text),
         );
-        return "<button class=\"dust-csv-export-btn\" data-event=\"{$escaped['event_name']}\">{$escaped['text']}</button>";
+        return "<button class=\"dust-csv-export-btn\" data-event=\"{$escaped['event_name']}\" aria-label=\"Export schedule to CSV file\" type=\"button\">{$escaped['text']}</button>";
     }
 
     /**
@@ -1177,7 +1177,7 @@ class DisplayDustData {
             'event_name' => esc_attr($event_name),
             'text' => esc_html($text),
         );
-        return "<button class=\"dust-morse-export-btn\" data-event=\"{$escaped['event_name']}\">{$escaped['text']}</button>";
+        return "<button class=\"dust-morse-export-btn\" data-event=\"{$escaped['event_name']}\" aria-label=\"Export schedule to Morse code file\" type=\"button\">{$escaped['text']}</button>";
     }
 
     /**

@@ -28,9 +28,18 @@
 
         // Handle item clicks for all types
         $(document).on(
-          "click",
+          "click keydown",
           ".dust-camps-item, .dust-art-item, .dust-schedule-item, .dust-music-item",
           function (e) {
+            // Handle keyboard events
+            if (e.type === "keydown" && e.which !== 13 && e.which !== 32) {
+              return;
+            }
+
+            if (e.type === "keydown") {
+              e.preventDefault();
+            }
+
             // Don't trigger if clicking on links
             if ($(e.target).is("a") || $(e.target).closest("a").length) {
               return;
@@ -231,40 +240,40 @@
       // Setup schedule tabs functionality
       setupScheduleTabs: function () {
         // Handle display toggle (tabs vs all events)
-        $(document).on('click', '.dust-schedule-toggle-btn', function(e) {
+        $(document).on("click", ".dust-schedule-toggle-btn", function (e) {
           e.preventDefault();
           var $btn = $(this);
-          var target = $btn.data('target');
-          var $container = $btn.closest('.dust-schedule-tabs-container');
-          
+          var target = $btn.data("target");
+          var $container = $btn.closest(".dust-schedule-tabs-container");
+
           // Update button states
-          $btn.siblings('.dust-schedule-toggle-btn').removeClass('active');
-          $btn.addClass('active');
-          
-          if (target === 'tabs') {
-            $container.find('.dust-schedule-tab-nav').show();
-            $container.find('.dust-schedule-tab-content').show();
-            $container.find('.dust-schedule-all-events').hide();
+          $btn.siblings(".dust-schedule-toggle-btn").removeClass("active");
+          $btn.addClass("active");
+
+          if (target === "tabs") {
+            $container.find(".dust-schedule-tab-nav").show();
+            $container.find(".dust-schedule-tab-content").show();
+            $container.find(".dust-schedule-all-events").hide();
           } else {
-            $container.find('.dust-schedule-tab-nav').hide();
-            $container.find('.dust-schedule-tab-content').hide();
-            $container.find('.dust-schedule-all-events').show();
+            $container.find(".dust-schedule-tab-nav").hide();
+            $container.find(".dust-schedule-tab-content").hide();
+            $container.find(".dust-schedule-all-events").show();
           }
         });
-        
+
         // Handle tab switching with accessibility
-        $(document).on('click', '.dust-schedule-tab-btn', function(e) {
+        $(document).on("click", ".dust-schedule-tab-btn", function (e) {
           e.preventDefault();
           LunaCode.DisplayDustData.activateTab($(this));
         });
-        
+
         // Handle keyboard navigation for tabs
-        $(document).on('keydown', '.dust-schedule-tab-btn', function(e) {
-          var $tabs = $(this).closest('.dust-schedule-tab-nav').find('.dust-schedule-tab-btn');
+        $(document).on("keydown", ".dust-schedule-tab-btn", function (e) {
+          var $tabs = $(this).closest(".dust-schedule-tab-nav").find(".dust-schedule-tab-btn");
           var currentIndex = $tabs.index(this);
           var $target = null;
-          
-          switch(e.which) {
+
+          switch (e.which) {
             case 37: // Left arrow
             case 38: // Up arrow
               e.preventDefault();
@@ -289,45 +298,44 @@
               LunaCode.DisplayDustData.activateTab($(this));
               return;
           }
-          
+
           if ($target) {
             // Update tabindex and focus
-            $tabs.attr('tabindex', '-1');
-            $target.attr('tabindex', '0').focus();
+            $tabs.attr("tabindex", "-1");
+            $target.attr("tabindex", "0").focus();
           }
         });
       },
-      
+
       // Activate a tab with proper accessibility handling
-      activateTab: function($btn) {
-        var tabId = $btn.data('tab');
-        var $container = $btn.closest('.dust-schedule-tabs-container');
-        var $tabNav = $btn.closest('.dust-schedule-tab-nav');
-        
+      activateTab: function ($btn) {
+        var tabId = $btn.data("tab");
+        var $container = $btn.closest(".dust-schedule-tabs-container");
+        var $tabNav = $btn.closest(".dust-schedule-tab-nav");
+
         // Update ARIA attributes and visual states
-        $tabNav.find('.dust-schedule-tab-btn')
-          .removeClass('active')
-          .attr('aria-selected', 'false')
-          .attr('tabindex', '-1');
-        
-        $btn.addClass('active')
-          .attr('aria-selected', 'true')
-          .attr('tabindex', '0');
-        
+        $tabNav
+          .find(".dust-schedule-tab-btn")
+          .removeClass("active")
+          .attr("aria-selected", "false")
+          .attr("tabindex", "-1");
+
+        $btn.addClass("active").attr("aria-selected", "true").attr("tabindex", "0");
+
         // Show corresponding tab content and focus it
-        var $panels = $container.find('.dust-schedule-tab-pane');
-        $panels.removeClass('active').hide();
-        
+        var $panels = $container.find(".dust-schedule-tab-pane");
+        $panels.removeClass("active").hide();
+
         var $activePanel = $container.find('.dust-schedule-tab-pane[data-tab="' + tabId + '"]');
-        $activePanel.addClass('active').show();
-        
+        $activePanel.addClass("active").show();
+
         // Move focus to the start of the new content for screen readers
         $activePanel.focus();
       },
 
       // Public method to toggle schedule display
-      toggleScheduleDisplay: function(containerId, displayType) {
-        var $container = $('#' + containerId);
+      toggleScheduleDisplay: function (containerId, displayType) {
+        var $container = $("#" + containerId);
         if ($container.length) {
           var $btn = $container.find('.dust-schedule-toggle-btn[data-target="' + displayType + '"]');
           if ($btn.length) {
@@ -337,8 +345,8 @@
       },
 
       // Public method to switch to specific tab
-      switchScheduleTab: function(containerId, tabId) {
-        var $container = $('#' + containerId);
+      switchScheduleTab: function (containerId, tabId) {
+        var $container = $("#" + containerId);
         if ($container.length) {
           var $btn = $container.find('.dust-schedule-tab-btn[data-tab="' + tabId + '"]');
           if ($btn.length) {
@@ -355,11 +363,11 @@
   });
 
   // Global convenience functions for schedule tabs
-  window.dustToggleScheduleDisplay = function(containerId, displayType) {
+  window.dustToggleScheduleDisplay = function (containerId, displayType) {
     LunaCode.DisplayDustData.toggleScheduleDisplay(containerId, displayType);
   };
 
-  window.dustSwitchScheduleTab = function(containerId, tabId) {
+  window.dustSwitchScheduleTab = function (containerId, tabId) {
     LunaCode.DisplayDustData.switchScheduleTab(containerId, tabId);
   };
 

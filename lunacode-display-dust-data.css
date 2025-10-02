@@ -73,6 +73,15 @@
     transform: translateY(-2px);
 }
 
+.dust-camps-item:focus,
+.dust-art-item:focus,
+.dust-schedule-item:focus,
+.dust-music-item:focus {
+    outline: 2px solid #005a9c;
+    outline-offset: 2px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
 /* Image Styles */
 .dust-camps-image,
 .dust-art-image,
@@ -437,6 +446,13 @@
 
 .lunacode-export-buttons .dust-ics-export-btn {
     margin: 0;
+}
+
+.dust-ics-export-btn:focus,
+.dust-csv-export-btn:focus,
+.dust-morse-export-btn:focus {
+    outline: 2px solid #005a9c;
+    outline-offset: 2px;
 }
 
 @media (max-width: 768px) {
