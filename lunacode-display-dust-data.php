@@ -799,15 +799,17 @@ class DisplayDustData {
             return $all_days_cache[$title];
         }
 
-        $all_days = array();
+        $day_dates = array();
         foreach ($all_data as $event) {
             if ($event['title'] === $title && !empty($event['day'])) {
-                $all_days[$event['day']] = true;
+                $day_dates[$event['day']] = $event['occurrence']['start_time'] ?? '';
             }
         }
 
-        $result = array_keys($all_days);
-        sort($result);
+        $result = array_keys($day_dates);
+        usort($result, function($a, $b) use ($day_dates) {
+            return strcmp($day_dates[$a], $day_dates[$b]);
+        });
         $all_days_cache[$title] = $result;
         return $result;
     }
@@ -855,9 +857,12 @@ class DisplayDustData {
                     }
                 } else {
                     // On day tabs: show "Thursday (repeats on Friday, Saturday, Sunday)"
-                    $repeat_days = self::get_repeat_days($title, $day, $all_data);
-                    if (!empty($repeat_days)) {
-                        $day_text .= ' (repeats on ' . esc_html(implode(', ', $repeat_days)) . ')';
+                    $all_days = self::get_all_repeat_days($title, $all_data);
+                    if (count($all_days) > 1) {
+                        $other_days = array_diff($all_days, array($day));
+                        if (!empty($other_days)) {
+                            $day_text .= ' (repeats on ' . esc_html(implode(', ', $other_days)) . ')';
+                        }
                     }
                 }
             }
