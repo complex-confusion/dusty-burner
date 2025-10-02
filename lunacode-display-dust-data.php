@@ -1058,6 +1058,7 @@ class DisplayDustData {
 
         foreach ($schedule_data as $event) {
             $ics .= "BEGIN:VEVENT\r\n";
+            // amazonq-ignore-next-line This fallback ID does not require secure randomness.
             $ics .= "UID:" . ($event['uid'] ?? uniqid()) . "@dust.events\r\n";
             $ics .= "SUMMARY:" . $this->escape_ics($event['title'] ?? '') . "\r\n";
 
