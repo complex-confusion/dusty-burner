@@ -1,11 +1,28 @@
 <?php
 /**
- * Plugin Name: LunaCode Display Dust Data
- * Description: Display camps, art, schedule, and music from the Dust API
- * Version: 0.3.0
- * Author: Complex Confusion
- * License: GPL2
- * Text Domain: lunacode-display-dust-data
+ * LunaCode Display Dust Data
+ *
+ * WordPress plugin for displaying Dust API data including camps, art, schedule, and music
+ * from regional Burning Man events. Provides shortcodes and customizable layouts.
+ *
+ * @package           LunaCode\DisplayDustData
+ * @author            Complex Confusion
+ * @copyright         2025 LunaCode
+ * @license           GPL-2.0-or-later
+ * @link              https://lunacode.com
+ * @version           0.4.0
+ *
+ * @wordpress-plugin
+ * Plugin Name:       LunaCode Display Dust Data
+ * Description:       Display camps, art, schedule, and music served by the Dust API with customizable shortcodes and layouts.
+ * Version:           0.4.0
+ * Requires at least: 4.6
+ * Requires PHP:      7.0
+ * Author:            Complex Confusion
+ * Author URI:        https://lunacode.com
+ * License:           GPL v2 or later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       lunacode-display-dust-data
  */
 
 namespace LunaCode;
@@ -942,7 +959,7 @@ class DisplayDustData {
 
         $output = fopen('php://temp', 'r+');
         fwrite($output, "SCHEDULE MORSE CODE\n\n");
-        
+
         foreach ($schedule_data as $event) {
             $text = strtoupper(strip_tags($event['title'] ?? ''));
             $morse_line = '';
@@ -956,11 +973,11 @@ class DisplayDustData {
             }
             fwrite($output, trim($morse_line) . "\n");
         }
-        
+
         rewind($output);
         $morse_content = stream_get_contents($output);
         fclose($output);
-        
+
         return $morse_content;
     }
 
