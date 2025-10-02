@@ -924,13 +924,16 @@ class DisplayDustData {
         $csv_content = $this->generate_csv($data);
 
         header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename="' . $event_name . '-schedule.csv"');
+        header('Content-Disposition: attachment; filename="' . esc_attr($event_name) . '-schedule.csv"');
         echo $csv_content;
         wp_die();
     }
 
     private function generate_csv($schedule_data) {
         $output = fopen('php://temp', 'r+');
+        if ($output === false) {
+            wp_die('Error creating CSV file');
+        }
 
         // CSV headers
         fputcsv($output, array('Title', 'Camp', 'Location', 'Day', 'Start Time', 'End Time', 'Short Time', 'Long Time', 'Brief Time', 'Image URL', 'Categories', 'Description'));
@@ -976,7 +979,7 @@ class DisplayDustData {
         $morse_content = $this->generate_morse($data);
 
         header('Content-Type: text/plain; charset=utf-8');
-        header('Content-Disposition: attachment; filename="' . $event_name . '-schedule.txt"');
+        header('Content-Disposition: attachment; filename="' . esc_attr($event_name) . '-schedule.txt"');
         echo $morse_content;
         wp_die();
     }
@@ -993,6 +996,9 @@ class DisplayDustData {
         );
 
         $output = fopen('php://temp', 'r+');
+        if ($output === false) {
+            wp_die('Error creating Morse file');
+        }
         fwrite($output, "SCHEDULE MORSE CODE\n\n");
 
         foreach ($schedule_data as $event) {
@@ -1072,8 +1078,10 @@ class DisplayDustData {
                 } else {
                     // Default 1 hour duration if no end time
                     $dt = DateTime::createFromFormat('Ymd\THis', $start_time);
-                    $dt->add(new DateInterval('PT1H'));
-                    $ics .= "DTEND;TZID=" . $timezone_info['id'] . ":" . $dt->format('Ymd\THis') . "\r\n";
+                    if ($dt !== false) {
+                        $dt->add(new DateInterval('PT1H'));
+                        $ics .= "DTEND;TZID=" . $timezone_info['id'] . ":" . $dt->format('Ymd\THis') . "\r\n";
+                    }
                 }
             }
 
@@ -1119,18 +1127,26 @@ class DisplayDustData {
 
     private function parse_dust_time($event, $event_name = null) {
         if (isset($event['occurrence']['start_time'])) {
-            $timezone_info = $this->get_event_timezone($event_name);
-            $dt = new DateTime($event['occurrence']['start_time'], new DateTimeZone($timezone_info['id']));
-            return $dt->format('Ymd\THis');
+            try {
+                $timezone_info = $this->get_event_timezone($event_name);
+                $dt = new DateTime($event['occurrence']['start_time'], new DateTimeZone($timezone_info['id']));
+                return $dt->format('Ymd\THis');
+            } catch (Exception $e) {
+                return null;
+            }
         }
         return null;
     }
 
     private function parse_dust_end_time($event, $event_name = null) {
         if (isset($event['occurrence']['end_time'])) {
-            $timezone_info = $this->get_event_timezone($event_name);
-            $dt = new DateTime($event['occurrence']['end_time'], new DateTimeZone($timezone_info['id']));
-            return $dt->format('Ymd\THis');
+            try {
+                $timezone_info = $this->get_event_timezone($event_name);
+                $dt = new DateTime($event['occurrence']['end_time'], new DateTimeZone($timezone_info['id']));
+                return $dt->format('Ymd\THis');
+            } catch (Exception $e) {
+                return null;
+            }
         }
         return null;
     }
