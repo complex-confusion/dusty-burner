@@ -47,6 +47,7 @@ class DisplayDustData {
         add_shortcode('dust_music', array($this, 'display_music_shortcode'));
         add_shortcode('dust_schedule_ics_button', array($this, 'display_ics_button_shortcode'));
         add_shortcode('dust_schedule_csv_button', array($this, 'display_csv_button_shortcode'));
+        add_shortcode('dust_schedule_morse_button', array($this, 'display_morse_button_shortcode'));
 
         // Add admin menu for settings
         add_action('admin_menu', array($this, 'add_admin_menu'));
@@ -59,6 +60,8 @@ class DisplayDustData {
         add_action('wp_ajax_nopriv_export_schedule_ics', array($this, 'export_schedule_ics'));
         add_action('wp_ajax_export_schedule_csv', array($this, 'export_schedule_csv'));
         add_action('wp_ajax_nopriv_export_schedule_csv', array($this, 'export_schedule_csv'));
+        add_action('wp_ajax_export_schedule_morse', array($this, 'export_schedule_morse'));
+        add_action('wp_ajax_nopriv_export_schedule_morse', array($this, 'export_schedule_morse'));
     }
 
     public function init() {
@@ -370,6 +373,18 @@ class DisplayDustData {
     }
 
     /**
+     * Shortcode for Morse export button
+     */
+    public function display_morse_button_shortcode($atts, $content = null) {
+        $atts = shortcode_atts(array(
+            'text' => '',
+            'event_name' => ''
+        ), $atts, 'dust_schedule_morse_button');
+
+        return self::render_morse_button($atts['event_name'], $atts['text']);
+    }
+
+    /**
      * Allow a shortcode to display data
      * Usage: [dust_camps], [dust_art], [dust_schedule], [dust_music]
      *
@@ -423,7 +438,7 @@ class DisplayDustData {
         } else {
             // Show export buttons for schedule if requested
             if ($type === 'schedule' && $atts['show_export_buttons'] === 'true') {
-                echo '<div class="lunacode-export-buttons">' . self::render_ics_button() . ' ' . self::render_csv_button() . '</div>';
+                echo '<div class="lunacode-export-buttons">' . self::render_ics_button() . ' ' . self::render_csv_button() . ' ' . self::render_morse_button() . '</div>';
             }
             self::render_data($data, $atts, $type);
         }
@@ -543,7 +558,7 @@ class DisplayDustData {
 
         // Export buttons if requested
         if (isset($options['show_export_buttons']) && $options['show_export_buttons'] === 'true') {
-            echo '<div class="lunacode-export-buttons">' . self::render_ics_button($event_name) . ' ' . self::render_csv_button($event_name) . '</div>';
+            echo '<div class="lunacode-export-buttons">' . self::render_ics_button($event_name) . ' ' . self::render_csv_button($event_name) . ' ' . self::render_morse_button($event_name) . '</div>';
         }
 
         // Tab navigation
@@ -894,6 +909,62 @@ class DisplayDustData {
     }
 
     /**
+     * Export schedule as Morse code file
+     */
+    public function export_schedule_morse() {
+        check_ajax_referer('dust_events_nonce', 'nonce');
+
+        $event_name = sanitize_text_field($_POST['event_name'] ?? get_option('dust_events_event_name'));
+        $data = self::get_data('schedule', $event_name);
+
+        if (is_wp_error($data)) {
+            wp_die('Error loading schedule data');
+        }
+
+        $morse_content = $this->generate_morse($data);
+
+        header('Content-Type: text/plain; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $event_name . '-schedule.txt"');
+        echo $morse_content;
+        wp_die();
+    }
+
+    private function generate_morse($schedule_data) {
+        $morse_map = array(
+            'A' => '.-', 'B' => '-...', 'C' => '-.-.', 'D' => '-..', 'E' => '.', 'F' => '..-.',
+            'G' => '--.', 'H' => '....', 'I' => '..', 'J' => '.---', 'K' => '-.-', 'L' => '.-..',
+            'M' => '--', 'N' => '-.', 'O' => '---', 'P' => '.--.', 'Q' => '--.-', 'R' => '.-.',
+            'S' => '...', 'T' => '-', 'U' => '..-', 'V' => '...-', 'W' => '.--', 'X' => '-..-',
+            'Y' => '-.--', 'Z' => '--..', '0' => '-----', '1' => '.----', '2' => '..---',
+            '3' => '...--', '4' => '....-', '5' => '.....', '6' => '-....', '7' => '--...',
+            '8' => '---..', '9' => '----.'
+        );
+
+        $output = fopen('php://temp', 'r+');
+        fwrite($output, "SCHEDULE MORSE CODE\n\n");
+        
+        foreach ($schedule_data as $event) {
+            $text = strtoupper(strip_tags($event['title'] ?? ''));
+            $morse_line = '';
+            for ($i = 0; $i < strlen($text); $i++) {
+                $char = $text[$i];
+                if ($char === ' ') {
+                    $morse_line .= '  ';
+                } elseif (isset($morse_map[$char])) {
+                    $morse_line .= $morse_map[$char] . ' ';
+                }
+            }
+            fwrite($output, trim($morse_line) . "\n");
+        }
+        
+        rewind($output);
+        $morse_content = stream_get_contents($output);
+        fclose($output);
+        
+        return $morse_content;
+    }
+
+    /**
      * Export schedule as ICS file
      */
     public function export_schedule_ics() {
@@ -1053,6 +1124,24 @@ class DisplayDustData {
     }
 
     /**
+     * Render Morse export button
+     *
+     * @param string $event_name Event name
+     * @param string|null $text Button text
+     * @return string HTML button
+     */
+    public static function render_morse_button($event_name = '', $text = '') {
+        $event_name = $event_name ?: get_option('dust_events_event_name');
+        $text = $text ?: '📡 Export to Morse';
+
+        $escaped = array(
+            'event_name' => esc_attr($event_name),
+            'text' => esc_html($text),
+        );
+        return "<button class=\"dust-morse-export-btn\" data-event=\"{$escaped['event_name']}\">{$escaped['text']}</button>";
+    }
+
+    /**
      * Get data for use in themes/other plugins
      *
      * @param string $type 'camps'|'art'|'schedule'|'music'
@@ -1114,4 +1203,15 @@ function dust_schedule_ics_button($event_name = '', $text = '') {
  */
 function dust_schedule_csv_button($event_name = '', $text = '') {
     return \LunaCode\DisplayDustData::render_csv_button($event_name, $text);
+}
+
+/**
+ * Render Morse export button
+ *
+ * @param string $event_name Event name
+ * @param string $text Button text
+ * @return string HTML button
+ */
+function dust_schedule_morse_button($event_name = '', $text = '') {
+    return \LunaCode\DisplayDustData::render_morse_button($event_name, $text);
 }
