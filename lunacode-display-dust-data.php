@@ -438,7 +438,7 @@ class DisplayDustData {
         $atts = shortcode_atts(array(
             'event_name' => '',
             'layout' => 'grid',
-            'show_coordinates' => 'true',
+            'show_coordinates' => 'false',
             'per_page' => -1,
             'show_images' => 'true',
             'show_export_buttons' => 'false',
@@ -523,7 +523,7 @@ class DisplayDustData {
      * @param string $tab_context 'repeating' or 'day' for schedule tabs
      * @return void
      */
-    public static function render_single_item($item, $show_coordinates = true, $show_images = true, $type = 'camps', $all_data = null, $tab_context = 'day') {
+    public static function render_single_item($item, $show_coordinates = false, $show_images = true, $type = 'camps', $all_data = null, $tab_context = 'day') {
         echo '<article class="dust-' . esc_attr($type) . '-item" data-uid="' . esc_attr($item['uid']) . '" role="article" tabindex="0">';
 
         if ($type === 'camps' || $type === 'art') {
