@@ -148,32 +148,14 @@
     margin-bottom: 0;
 }
 
-/* Specific Content Styles */
-.dust-art-artist,
-.dust-schedule-camp,
-.dust-schedule-location,
-.dust-schedule-day,
-.dust-schedule-time,
-.dust-music-camp,
-.dust-music-location,
-.dust-music-day,
-.dust-music-who,
-.dust-music-time {
+/* Item Field Styles */
+.dust-item-field {
     margin: 0 0 8px 0;
     font-size: 13px;
     color: #555;
 }
 
-.dust-art-artist strong,
-.dust-schedule-camp strong,
-.dust-schedule-location strong,
-.dust-schedule-day strong,
-.dust-schedule-time strong,
-.dust-music-camp strong,
-.dust-music-location strong,
-.dust-music-day strong,
-.dust-music-who strong,
-.dust-music-time strong {
+.dust-item-field strong {
     color: #333;
 }
 

@@ -332,6 +332,27 @@ class DisplayDustData {
     }
 
     /**
+     * Format categories as comma-separated list
+     *
+     * @param array $item
+     * @param string $type
+     * @return string
+     */
+    private static function format_categories($item, $type) {
+        $categories = array();
+
+        if ($type === 'schedule' && isset($item['event_type']['label'])) {
+            $categories[] = $item['event_type']['label'];
+        } elseif ($type === 'camps' && isset($item['camp_type'])) {
+            $categories[] = $item['camp_type'];
+        } elseif ($type === 'art' && isset($item['art_type'])) {
+            $categories[] = $item['art_type'];
+        }
+
+        return !empty($categories) ? implode(', ', $categories) : '';
+    }
+
+    /**
      * AJAX handler for getting data
      *
      * @return void
@@ -551,7 +572,12 @@ class DisplayDustData {
         echo '<h3 class="dust-' . esc_attr($type) . '-name">' . esc_html($name) . '</h3>';
 
         if ($type === 'art' && isset($item['artist'])) {
-            echo '<div class="dust-art-artist"><strong>Artist:</strong> ' . esc_html($item['artist']) . '</div>';
+            echo '<div class="dust-item-field"><strong>Artist:</strong> ' . esc_html($item['artist']) . '</div>';
+        }
+
+        $categories = self::format_categories($item, $type);
+        if (!empty($categories)) {
+            echo '<div class="dust-item-field"><strong>Categories:</strong> ' . esc_html($categories) . '</div>';
         }
 
         if (!empty($description)) {
@@ -842,8 +868,13 @@ class DisplayDustData {
         echo '<div class="dust-schedule-content">';
         echo '<h3 class="dust-schedule-title">' . esc_html($title) . '</h3>';
 
-        if ($camp) echo '<div class="dust-schedule-camp"><strong>Camp:</strong> ' . esc_html($camp) . '</div>';
-        if ($location) echo '<div class="dust-schedule-location"><strong>Location:</strong> ' . esc_html($location) . '</div>';
+        if ($camp) echo '<div class="dust-item-field"><strong>Camp:</strong> ' . esc_html($camp) . '</div>';
+        if ($location) echo '<div class="dust-item-field"><strong>Location:</strong> ' . esc_html($location) . '</div>';
+
+        $categories = self::format_categories($item, 'schedule');
+        if (!empty($categories)) {
+            echo '<div class="dust-item-field"><strong>Categories:</strong> ' . esc_html($categories) . '</div>';
+        }
 
         if ($day) {
             $day_text = esc_html($day);
@@ -866,11 +897,11 @@ class DisplayDustData {
                     }
                 }
             }
-            echo '<div class="dust-schedule-day"><strong>Day:</strong> ' . $day_text . '</div>';
+            echo '<div class="dust-item-field"><strong>Day:</strong> ' . $day_text . '</div>';
         }
 
         if (isset($occurrence['long'])) {
-            echo '<div class="dust-schedule-time"><strong>Time:</strong> ' . esc_html($occurrence['long']) . '</div>';
+            echo '<div class="dust-item-field"><strong>Time:</strong> ' . esc_html($occurrence['long']) . '</div>';
         }
 
         if (!empty($description)) {
@@ -895,16 +926,16 @@ class DisplayDustData {
         echo '<div class="dust-music-content">';
         echo '<h3 class="dust-music-title">' . esc_html($title) . '</h3>';
 
-        if ($camp) echo '<div class="dust-music-camp"><strong>Camp:</strong> ' . esc_html($camp) . '</div>';
-        if ($location) echo '<div class="dust-music-location"><strong>Location:</strong> ' . esc_html($location) . '</div>';
-        if ($day) echo '<div class="dust-music-day"><strong>Day:</strong> ' . esc_html($day) . '</div>';
+        if ($camp) echo '<div class="dust-item-field"><strong>Camp:</strong> ' . esc_html($camp) . '</div>';
+        if ($location) echo '<div class="dust-item-field"><strong>Location:</strong> ' . esc_html($location) . '</div>';
+        if ($day) echo '<div class="dust-item-field"><strong>Day:</strong> ' . esc_html($day) . '</div>';
 
         if (isset($occurrence['who'])) {
-            echo '<div class="dust-music-who"><strong>Artist:</strong> ' . esc_html($occurrence['who']) . '</div>';
+            echo '<div class="dust-item-field"><strong>Artist:</strong> ' . esc_html($occurrence['who']) . '</div>';
         }
 
         if (isset($occurrence['long'])) {
-            echo '<div class="dust-music-time"><strong>Time:</strong> ' . esc_html($occurrence['long']) . '</div>';
+            echo '<div class="dust-item-field"><strong>Time:</strong> ' . esc_html($occurrence['long']) . '</div>';
         }
         echo '</div>';
     }
