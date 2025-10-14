@@ -5,23 +5,23 @@
  * WordPress plugin for displaying Dust API data including camps, art, schedule, and music
  * from regional Burning Man events. Provides shortcodes and customizable layouts.
  *
- * @package           LunaCode\DisplayDustData
- * @author            Complex Confusion
- * @copyright         2025 LunaCode
- * @license           GPL-2.0-or-later
- * @link              https://lunacode.com
- * @version           0.5.0
  *
  * @wordpress-plugin
  * Plugin Name:       LunaCode Display Dust Data
  * Description:       Display camps, art, schedule, and music served by the Dust API with customizable shortcodes and layouts.
- * Version:           0.4.0
+ * Version:           0.5.0
+ * @version           0.5.0
  * Requires at least: 4.6
  * Requires PHP:      7.0
  * Author:            Complex Confusion
+ * @author            Complex Confusion
  * Author URI:        https://lunacode.com
+ * @link              https://lunacode.com
+ * @package           LunaCode\DisplayDustData
+ * @copyright         2025 LunaCode
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * @license           GPL-2.0-or-later
  * Text Domain:       lunacode-display-dust-data
  */
 
