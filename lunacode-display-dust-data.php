@@ -1165,7 +1165,7 @@ class DisplayDustData {
                 $timezone_info = $this->get_event_timezone($event_name);
                 $dt = new DateTime($event['occurrence']['start_time'], new DateTimeZone($timezone_info['id']));
                 return $dt->format('Ymd\THis');
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 return null;
             }
         }
@@ -1178,7 +1178,7 @@ class DisplayDustData {
                 $timezone_info = $this->get_event_timezone($event_name);
                 $dt = new DateTime($event['occurrence']['end_time'], new DateTimeZone($timezone_info['id']));
                 return $dt->format('Ymd\THis');
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 return null;
             }
         }
