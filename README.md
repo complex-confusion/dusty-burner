@@ -15,7 +15,7 @@ Many thanks to Dust's creator Damian for creating and supporting the app, and fo
    [dust_schedule layout="list"]
    [dust_schedule display="tabs" layout="grid" show_export_buttons="all" ]
    [dust_schedule layout="list" show_export_buttons="csv,ics"]
-   [dust_schedule layout="grid" show_export_buttons="morse"]
+   [dust_schedule layout="grid" show_export_buttons="csv"]
    [dust_music layout="list"]
    ```
 
@@ -41,17 +41,17 @@ Shows scheduled events sorted by camp, then by title.
 
 **Export Buttons**: The `show_export_buttons` parameter accepts:
 
-- `"all"` or `"true"`: Show all export buttons (ICS, CSV, Morse)
+- `"all"` or `"true"`: Show all export buttons (ICS or CSV)
 - `"none"` or `"false"`: Show no export buttons
-- `"csv"`, `"ics"`, `"morse"`: Show specific export button
-- Comma-separated list: `"csv,ics"`, `"ics,morse"`, etc.
+- `"csv"`, `"ics"`: Show specific export button
+- Comma-separated list: `"csv,ics"`
 
 **Examples:**
 
 ```
 [dust_schedule show_export_buttons="all"]
 [dust_schedule show_export_buttons="csv,ics"]
-[dust_schedule show_export_buttons="morse"]
+[dust_schedule show_export_buttons="csv"]
 [dust_schedule show_export_buttons="none"]
 ```
 
@@ -99,23 +99,6 @@ Displays a button to export schedule data as a CSV file.
 [dust_schedule_csv_button text="Get Spreadsheet" event_name="myburn2024"]
 ```
 
-### [dust_schedule_morse_button] - Morse Code Export Button
-
-Displays a button to export schedule data as a Morse code text file.
-
-**Parameters:**
-
-- `text`: Custom button text (default: "📡 Export to Morse")
-- `event_name`: Specific event name (optional)
-
-**Examples:**
-
-```
-[dust_schedule_morse_button]
-[dust_schedule_morse_button text="Download Morse"]
-[dust_schedule_morse_button text="Get Morse Code" event_name="myburn2024"]
-```
-
 ## Configuration Options
 
 ### Shortcode Parameters (All Shortcodes)
@@ -125,7 +108,7 @@ Displays a button to export schedule data as a Morse code text file.
 - `show_coordinates`: `"true"` or `"false"` (default: true) - For camps/art only
 - `show_images`: `"true"` or `"false"` (default: true)
 - `per_page`: Number of items to show, `-1` for all (default: -1)
-- `show_export_buttons`: `"csv"`, `"ics"`, `"morse"`, `"all"`, `"none"`, or comma-separated list (default: false) - For schedule only
+- `show_export_buttons`: `"csv"`, `"ics"`, `"all"`, `"none"`, or comma-separated list (default: false) - For schedule only
 - `display`: `"all"` or `"tabs"` (default: all) - For schedule only
 
 ### Display Layouts
@@ -359,9 +342,6 @@ echo dust_schedule_ics_button('Custom Text');
 echo dust_schedule_ics_button('Download Events', 'myburn2024');
 echo dust_schedule_csv_button();
 echo dust_schedule_csv_button('Download CSV', 'myburn2024');
-echo dust_schedule_morse_button();
-echo dust_schedule_morse_button('Download Morse', 'myburn2024');
-
 
 ```
 

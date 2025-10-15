@@ -431,8 +431,7 @@
 }
 
 .dust-ics-export-btn:focus,
-.dust-csv-export-btn:focus,
-.dust-morse-export-btn:focus {
+.dust-csv-export-btn:focus {
     outline: 2px solid #005a9c;
     outline-offset: 2px;
 }
