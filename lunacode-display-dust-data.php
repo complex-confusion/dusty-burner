@@ -214,7 +214,7 @@ class DisplayDustData {
         $cache_key = 'dust_' . $type . '_' . md5($event_name);
         $cached_data = get_transient($cache_key);
 
-        if ($cached_data !== false) {
+        if (false !== $cached_data) {
             return $cached_data;
         }
 
@@ -229,7 +229,7 @@ class DisplayDustData {
         }
 
         $response_code = wp_remote_retrieve_response_code($response);
-        if ($response_code !== 200) {
+        if (200 !== $response_code) {
             return new WP_Error('api_error', 'API returned status code: ' . $response_code);
         }
 
@@ -259,20 +259,20 @@ class DisplayDustData {
      * @return void
      */
     private static function sort_data(&$data, $type) {
-        if ($type === 'camps' || $type === 'art') {
+        if ('camps' === $type || 'art' === $type) {
             // Sort by name
             uasort($data, function($a, $b) {
                 $name_a = (string)($a['name'] ?? '');
                 $name_b = (string)($b['name'] ?? '');
                 return strcmp($name_a, $name_b);
             });
-        } elseif ($type === 'schedule' || $type === 'music') {
+        } elseif ('schedule' === $type || 'music' === $type) {
             // Sort by camp, then by title
             uasort($data, function($a, $b) {
                 $camp_a = (string)($a['camp'] ?? $a['hosted_by_camp'] ?? '');
                 $camp_b = (string)($b['camp'] ?? $b['hosted_by_camp'] ?? '');
                 $camp_cmp = strcmp($camp_a, $camp_b);
-                if ($camp_cmp === 0) {
+                if (0 === $camp_cmp) {
                     $title_a = (string)($a['title'] ?? '');
                     $title_b = (string)($b['title'] ?? '');
                     return strcmp($title_a, $title_b);
@@ -357,11 +357,11 @@ class DisplayDustData {
     private static function format_categories($item, $type) {
         $categories = array();
 
-        if ($type === 'schedule' && isset($item['event_type']['label'])) {
+        if ('schedule' === $type && isset($item['event_type']['label'])) {
             $categories[] = $item['event_type']['label'];
-        } elseif ($type === 'camps' && isset($item['camp_type'])) {
+        } elseif ('camps' === $type && isset($item['camp_type'])) {
             $categories[] = $item['camp_type'];
-        } elseif ($type === 'art' && isset($item['art_type'])) {
+        } elseif ('art' === $type && isset($item['art_type'])) {
             $categories[] = $item['art_type'];
         }
 
@@ -451,7 +451,7 @@ class DisplayDustData {
         ), $atts, $tag);
 
         // Backwards compatibility: if old parameter is used, use it
-        if ($atts['show_export_button'] === 'true' && $atts['show_export_buttons'] === 'false') {
+        if ('true' === $atts['show_export_button'] && 'false' === $atts['show_export_buttons']) {
             $atts['show_export_buttons'] = 'true';
         }
 
@@ -478,11 +478,11 @@ class DisplayDustData {
 
         ob_start();
 
-        if ($type === 'schedule' && $atts['display'] === 'tabs') {
+        if ('schedule' === $type && 'tabs' === $atts['display']) {
             self::render_schedule_tabs($data, $atts, $event_name);
         } else {
             // Show export buttons for schedule if requested
-            if ($type === 'schedule') {
+            if ('schedule' === $type) {
                 $export_buttons = self::get_export_buttons($atts['show_export_buttons'], $event_name);
                 if (!empty($export_buttons)) {
                     echo '<div class="lunacode-export-buttons">' . $export_buttons . '</div>';
@@ -530,11 +530,11 @@ class DisplayDustData {
     public static function render_single_item($item, $show_coordinates = false, $show_images = true, $type = 'camps', $all_data = null, $tab_context = 'day') {
         echo '<article class="dust-' . esc_attr($type) . '-item" data-uid="' . esc_attr($item['uid']) . '" role="article" tabindex="0">';
 
-        if ($type === 'camps' || $type === 'art') {
+        if ('camps' === $type || 'art' === $type) {
             self::render_camps_art($item, $show_coordinates, $show_images, $type);
-        } elseif ($type === 'schedule') {
+        } elseif ('schedule' === $type) {
             self::render_schedule($item, $show_images, $all_data, $tab_context);
-        } elseif ($type === 'music') {
+        } elseif ('music' === $type) {
             self::render_music($item);
         }
 
@@ -557,7 +557,7 @@ class DisplayDustData {
         // Handle images differently for art vs camps
         $image_url = null;
         if ($show_images) {
-            if ($type === 'art' && isset($item['images']) && !empty($item['images'])) {
+            if ('art' === $type && isset($item['images']) && !empty($item['images'])) {
                 $image_url = $item['images'][0]['thumbnail_url'];
             } elseif (isset($item['imageUrl'])) {
                 $image_url = self::get_image_url($item['imageUrl']);
@@ -575,7 +575,7 @@ class DisplayDustData {
         echo '<div class="dust-' . esc_attr($type) . '-content">';
         echo '<h3 class="dust-' . esc_attr($type) . '-name">' . esc_html($name) . '</h3>';
 
-        if ($type === 'art' && isset($item['artist'])) {
+        if ('art' === $type && isset($item['artist'])) {
             echo '<div class="dust-item-field"><strong>Artist:</strong> ' . esc_html($item['artist']) . '</div>';
         }
 
@@ -776,7 +776,7 @@ class DisplayDustData {
 
             if ($a_time && $b_time) {
                 $time_cmp = strcmp($a_time, $b_time);
-                if ($time_cmp !== 0) return $time_cmp;
+                if (0 !== $time_cmp) return $time_cmp;
             }
 
             // Sort by title
@@ -883,7 +883,7 @@ class DisplayDustData {
         if ($day) {
             $day_text = esc_html($day);
             if ($all_data && !empty($title)) {
-                if ($tab_context === 'repeating') {
+                if ('repeating' === $tab_context) {
                     // On Repeating tab: show "Repeats on [list of all days]"
 
                     $all_days = self::get_all_repeat_days($title, $all_data);
@@ -966,7 +966,7 @@ class DisplayDustData {
 
     private function generate_csv($schedule_data) {
         $output = fopen('php://temp', 'r+');
-        if ($output === false) {
+        if (false === $output) {
             wp_die('Error creating CSV file');
         }
 
@@ -1056,7 +1056,7 @@ class DisplayDustData {
                 } else {
                     // Default 1 hour duration if no end time
                     $dt = DateTime::createFromFormat('Ymd\THis', $start_time);
-                    if ($dt !== false) {
+                    if (false !== $dt) {
                         $dt->add(new DateInterval('PT1H'));
                         $ics .= "DTEND;TZID=" . $timezone_info['id'] . ":" . $dt->format('Ymd\THis') . "\r\n";
                     }
@@ -1232,11 +1232,11 @@ class DisplayDustData {
      */
     private static function get_export_buttons($show_export_buttons, $event_name = '') {
         // Handle legacy boolean values
-        if ($show_export_buttons === 'true' || $show_export_buttons === 'all') {
+        if ('true' === $show_export_buttons || 'all' === $show_export_buttons) {
             return self::render_ics_button($event_name) . ' ' . self::render_csv_button($event_name);
         }
 
-        if ($show_export_buttons === 'false' || $show_export_buttons === 'none' || empty($show_export_buttons)) {
+        if ('false' === $show_export_buttons || 'none' === $show_export_buttons || empty($show_export_buttons)) {
             return '';
         }
 
