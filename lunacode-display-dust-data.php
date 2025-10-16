@@ -121,6 +121,7 @@ class DisplayDustData {
 
     public function settings_init() {
         register_setting('dust_events', 'dust_events_event_name');
+        register_setting('dust_events', 'dust_events_timezone');
 
         add_settings_section(
             'dust_events_section',
@@ -136,6 +137,14 @@ class DisplayDustData {
             'dust_events',
             'dust_events_section'
         );
+
+        add_settings_field(
+            'dust_events_timezone',
+            'Event Timezone',
+            array($this, 'timezone_render'),
+            'dust_events',
+            'dust_events_section'
+        );
     }
 
     public function settings_section_callback() {
@@ -146,6 +155,20 @@ class DisplayDustData {
         $event_name = get_option('dust_events_event_name');
         echo '<input type="text" name="dust_events_event_name" value="' . esc_attr($event_name) . '" />';
         echo '<p class="description">This is the unique name used to register your regional burn in Dust.</p>';
+    }
+
+    public function timezone_render() {
+        $wp_timezone = wp_timezone_string();
+        $selected_timezone = get_option('dust_events_timezone', $wp_timezone);
+        $timezones = DateTimeZone::listIdentifiers();
+        
+        echo '<select name="dust_events_timezone">';
+        foreach ($timezones as $timezone) {
+            $selected = selected($selected_timezone, $timezone, false);
+            echo '<option value="' . esc_attr($timezone) . '"' . $selected . '>' . esc_html($timezone) . '</option>';
+        }
+        echo '</select>';
+        echo '<p class="description">Timezone for calendar exports and event times.</p>';
     }
 
     public function options_page() {
@@ -1053,35 +1076,89 @@ class DisplayDustData {
 
     /**
      * Return the event's timezone details
-     * Returns a static EDT timezone for now - will be dynamic based on event in future.
-     * // TODO make dynamic
      *
      * @param string|null $event_name
      * @return array
      */
     private function get_event_timezone($event_name = null) {
+        $wp_timezone = wp_timezone_string();
+        $timezone_id = get_option('dust_events_timezone', $wp_timezone);
+        
         return array(
-            'id' => 'America/New_York',
-            'vtimezone' => array(
+            'id' => $timezone_id,
+            'vtimezone' => $this->generate_vtimezone($timezone_id)
+        );
+    }
+
+    /**
+     * Generate VTIMEZONE block for given timezone
+     *
+     * @param string $timezone_id
+     * @return array
+     */
+    private function generate_vtimezone($timezone_id) {
+        try {
+            $timezone = new DateTimeZone($timezone_id);
+            $now = new DateTime('now', $timezone);
+            $transitions = $timezone->getTransitions($now->getTimestamp(), $now->getTimestamp() + (2 * 365 * 24 * 60 * 60));
+            
+            if (count($transitions) < 2) {
+                return array(
+                    "BEGIN:VTIMEZONE",
+                    "TZID:$timezone_id",
+                    "BEGIN:STANDARD",
+                    "TZOFFSETFROM:" . $this->format_offset($transitions[0]['offset']),
+                    "TZOFFSETTO:" . $this->format_offset($transitions[0]['offset']),
+                    "TZNAME:" . $transitions[0]['abbr'],
+                    "DTSTART:19700101T000000",
+                    "END:STANDARD",
+                    "END:VTIMEZONE"
+                );
+            }
+            
+            $vtimezone = array("BEGIN:VTIMEZONE", "TZID:$timezone_id");
+            
+            foreach (array_slice($transitions, 1, 2) as $transition) {
+                $type = $transition['isdst'] ? 'DAYLIGHT' : 'STANDARD';
+                $dt = new DateTime('@' . $transition['ts']);
+                $dt->setTimezone($timezone);
+                
+                $vtimezone[] = "BEGIN:$type";
+                $vtimezone[] = "TZOFFSETFROM:" . $this->format_offset($transitions[0]['offset']);
+                $vtimezone[] = "TZOFFSETTO:" . $this->format_offset($transition['offset']);
+                $vtimezone[] = "TZNAME:" . $transition['abbr'];
+                $vtimezone[] = "DTSTART:" . $dt->format('Ymd\THis');
+                $vtimezone[] = "END:$type";
+            }
+            
+            $vtimezone[] = "END:VTIMEZONE";
+            return $vtimezone;
+            
+        } catch (Exception $e) {
+            return array(
                 "BEGIN:VTIMEZONE",
-                "TZID:America/New_York",
-                "BEGIN:DAYLIGHT",
-                "TZOFFSETFROM:-0500",
-                "TZOFFSETTO:-0400",
-                "TZNAME:EDT",
-                "DTSTART:20070311T020000",
-                "RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU",
-                "END:DAYLIGHT",
+                "TZID:UTC",
                 "BEGIN:STANDARD",
-                "TZOFFSETFROM:-0400",
-                "TZOFFSETTO:-0500",
-                "TZNAME:EST",
-                "DTSTART:20071104T020000",
-                "RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU",
+                "TZOFFSETFROM:+0000",
+                "TZOFFSETTO:+0000",
+                "TZNAME:UTC",
+                "DTSTART:19700101T000000",
                 "END:STANDARD",
                 "END:VTIMEZONE"
-            )
-        );
+            );
+        }
+    }
+
+    /**
+     * Format timezone offset for ICS
+     *
+     * @param int $offset Offset in seconds
+     * @return string
+     */
+    private function format_offset($offset) {
+        $hours = intval($offset / 3600);
+        $minutes = abs(intval(($offset % 3600) / 60));
+        return sprintf('%+03d%02d', $hours, $minutes);
     }
 
     private function parse_dust_time($event, $event_name = null) {
