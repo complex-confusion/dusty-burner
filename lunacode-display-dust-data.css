@@ -436,6 +436,14 @@
     outline-offset: 2px;
 }
 
+.announcer-msg {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
 @media (max-width: 768px) {
     .dust-schedule-tab-nav {
         flex-direction: column;

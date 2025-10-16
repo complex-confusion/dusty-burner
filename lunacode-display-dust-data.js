@@ -329,8 +329,13 @@
         var $activePanel = $container.find('.dust-schedule-tab-pane[data-tab="' + tabId + '"]');
         $activePanel.addClass("active").show();
 
-        // Move focus to the start of the new content for screen readers
-        $activePanel.focus();
+        // Announce tab change to screen readers without scrolling
+        var $announcer = $container.find(".sr-announcer");
+        if ($announcer.length === 0) {
+          $announcer = $('<div class="sr-announcer announcer-msg" aria-live="polite"></div>');
+          $container.append($announcer);
+        }
+        $announcer.text("Switched to " + $btn.text() + " tab");
       },
 
       // Public method to toggle schedule display
