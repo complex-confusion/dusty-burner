@@ -51,7 +51,7 @@ if (!defined('ABSPATH')) {
 }
 
 class DisplayDustData {
-    const PLUGIN_VERSION = '0.2.0';
+    const PLUGIN_VERSION = '0.5.0';
     const IMAGE_BASE_URL = 'https://data.dust.events/';
     const API_BASE_URL = 'https://data.dust.events/';
 
