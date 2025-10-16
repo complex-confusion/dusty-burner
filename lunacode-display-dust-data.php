@@ -160,15 +160,11 @@ class DisplayDustData {
     public function timezone_render() {
         $wp_timezone = wp_timezone_string();
         $selected_timezone = get_option('dust_events_timezone', $wp_timezone);
-        $timezones = DateTimeZone::listIdentifiers();
-        
         echo '<select name="dust_events_timezone">';
-        foreach ($timezones as $timezone) {
-            $selected = selected($selected_timezone, $timezone, false);
-            echo '<option value="' . esc_attr($timezone) . '"' . $selected . '>' . esc_html($timezone) . '</option>';
-        }
+
+        echo wp_timezone_choice($selected_timezone);
         echo '</select>';
-        echo '<p class="description">Timezone for calendar exports and event times.</p>';
+        echo '<p class="description">Timezone containing your regional burn. Used for calendar exports.</p>';
     }
 
     public function options_page() {
@@ -1083,7 +1079,7 @@ class DisplayDustData {
     private function get_event_timezone($event_name = null) {
         $wp_timezone = wp_timezone_string();
         $timezone_id = get_option('dust_events_timezone', $wp_timezone);
-        
+
         return array(
             'id' => $timezone_id,
             'vtimezone' => $this->generate_vtimezone($timezone_id)
@@ -1101,7 +1097,7 @@ class DisplayDustData {
             $timezone = new DateTimeZone($timezone_id);
             $now = new DateTime('now', $timezone);
             $transitions = $timezone->getTransitions($now->getTimestamp(), $now->getTimestamp() + (2 * 365 * 24 * 60 * 60));
-            
+
             if (count($transitions) < 2) {
                 return array(
                     "BEGIN:VTIMEZONE",
@@ -1115,14 +1111,14 @@ class DisplayDustData {
                     "END:VTIMEZONE"
                 );
             }
-            
+
             $vtimezone = array("BEGIN:VTIMEZONE", "TZID:$timezone_id");
-            
+
             foreach (array_slice($transitions, 1, 2) as $transition) {
                 $type = $transition['isdst'] ? 'DAYLIGHT' : 'STANDARD';
                 $dt = new DateTime('@' . $transition['ts']);
                 $dt->setTimezone($timezone);
-                
+
                 $vtimezone[] = "BEGIN:$type";
                 $vtimezone[] = "TZOFFSETFROM:" . $this->format_offset($transitions[0]['offset']);
                 $vtimezone[] = "TZOFFSETTO:" . $this->format_offset($transition['offset']);
@@ -1130,10 +1126,10 @@ class DisplayDustData {
                 $vtimezone[] = "DTSTART:" . $dt->format('Ymd\THis');
                 $vtimezone[] = "END:$type";
             }
-            
+
             $vtimezone[] = "END:VTIMEZONE";
             return $vtimezone;
-            
+
         } catch (Exception $e) {
             return array(
                 "BEGIN:VTIMEZONE",
