@@ -30,7 +30,7 @@ namespace LunaCode;
 // WordPress functions
 use function add_action, add_options_page, add_settings_field, add_settings_section, add_shortcode, admin_url,
     check_ajax_referer, current_user_can, do_settings_sections, esc_attr, esc_html, esc_url, get_option, get_transient,
-    is_admin, is_user_logged_in, is_wp_error, plugin_dir_url, register_post_type, register_setting, sanitize_text_field, set_transient,
+    is_admin, is_wp_error, plugin_dir_url, register_post_type, register_setting, sanitize_text_field, set_transient,
     settings_fields, shortcode_atts, submit_button, wp_create_nonce, wp_die, wp_enqueue_script, wp_enqueue_style,
     wp_kses_post, wp_localize_script, wp_remote_get, wp_remote_retrieve_body, wp_remote_retrieve_response_code,
     wp_send_json_error, wp_send_json_success;
