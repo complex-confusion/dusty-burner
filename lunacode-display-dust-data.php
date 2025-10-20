@@ -281,6 +281,11 @@ class DisplayDustData {
             return new WP_Error('json_error', 'Invalid JSON response');
         }
 
+        // Filter date-based data
+        if ('schedule' === $type || 'music' === $type) {
+            $data = self::filter_by_date_range($data);
+        }
+
         // Sort data based on type
         self::sort_data($data, $type);
 
@@ -857,6 +862,48 @@ class DisplayDustData {
     }
 
     /**
+     * Filter data by configured date range
+     *
+     * @param array $data
+     * @return array
+     */
+    private static function filter_by_date_range($data) {
+        $start_date = get_option('dust_events_start_date');
+        $end_date = get_option('dust_events_end_date');
+
+        if (empty($start_date) && empty($end_date)) {
+            return $data;
+        }
+
+        $timezone_id = get_option('dust_events_timezone', wp_timezone_string());
+
+        error_log("DUST DEBUG: Filtering data - Start: {$start_date}, End: {$end_date}, Timezone: {$timezone_id}");
+
+        return array_filter($data, function($item) use ($start_date, $end_date, $timezone_id) {
+            if (!isset($item['occurrence']['start_time'])) {
+                return true;
+            }
+
+            try {
+                $dt = new DateTime($item['occurrence']['start_time'], new DateTimeZone($timezone_id));
+                $event_date = $dt->format('Y-m-d');
+            } catch (\Exception $e) {
+                return true;
+            }
+
+            if ($start_date && $event_date < $start_date) {
+                return false;
+            }
+
+            if ($end_date && $event_date > $end_date) {
+                return false;
+            }
+
+            return true;
+        });
+    }
+
+    /**
      * Get all days an event repeats on (including all instances)
      *
      * @param string $title Event title
@@ -870,9 +917,28 @@ class DisplayDustData {
             return $all_days_cache[$title];
         }
 
+        $start_date = get_option('dust_events_start_date');
+        $end_date = get_option('dust_events_end_date');
+        $timezone_id = get_option('dust_events_timezone', wp_timezone_string());
+
         $day_dates = array();
         foreach ($all_data as $event) {
             if ($event['title'] === $title && !empty($event['day'])) {
+                $event_date = null;
+                if (isset($event['occurrence']['start_time'])) {
+                    try {
+                        $dt = new DateTime($event['occurrence']['start_time'], new DateTimeZone($timezone_id));
+                        $event_date = $dt->format('Y-m-d');
+                    } catch (\Exception $e) {
+                        // Continue without filtering if date parsing fails
+                    }
+                }
+
+                if ($event_date) {
+                    if ($start_date && $event_date < $start_date) continue;
+                    if ($end_date && $event_date > $end_date) continue;
+                }
+
                 $day_dates[$event['day']] = $event['occurrence']['start_time'] ?? '';
             }
         }
