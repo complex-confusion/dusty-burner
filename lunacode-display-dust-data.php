@@ -1130,7 +1130,7 @@ class DisplayDustData {
             $vtimezone[] = "END:VTIMEZONE";
             return $vtimezone;
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return array(
                 "BEGIN:VTIMEZONE",
                 "TZID:UTC",
