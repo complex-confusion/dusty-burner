@@ -121,12 +121,14 @@ class DisplayDustData {
 
     public function settings_init() {
         register_setting('dust_events', 'dust_events_event_name');
+        register_setting('dust_events', 'dust_events_start_date');
+        register_setting('dust_events', 'dust_events_end_date');
         register_setting('dust_events', 'dust_events_timezone');
 
         add_settings_section(
-            'dust_events_section',
+            'dust_api_section',
             'API Configuration',
-            array($this, 'settings_section_callback'),
+            array($this, 'settings_api_section_callback'),
             'dust_events'
         );
 
@@ -134,6 +136,29 @@ class DisplayDustData {
             'dust_events_event_name',
             'Event Name (your-unique-name)',
             array($this, 'event_name_render'),
+            'dust_events',
+            'dust_api_section'
+        );
+
+        add_settings_section(
+            'dust_events_section',
+            'Event Configuration',
+            array($this, 'settings_events_section_callback'),
+            'dust_events'
+        );
+
+        add_settings_field(
+            'dust_events_start_date',
+            'Start Date of Your Burn',
+            array($this, 'start_date_render'),
+            'dust_events',
+            'dust_events_section'
+        );
+
+        add_settings_field(
+            'dust_events_end_date',
+            'End Date of Your Burn',
+            array($this, 'end_date_render'),
             'dust_events',
             'dust_events_section'
         );
@@ -147,14 +172,30 @@ class DisplayDustData {
         );
     }
 
-    public function settings_section_callback() {
-        echo 'Enter Dust\'s unique name for your regional burn:';
+    public function settings_api_section_callback() {
+        echo 'This info is used to communicate with the Dust APIs, and is not displayed by the plugin.';
+    }
+
+    public function settings_events_section_callback() {
+        echo 'These settings help display and limit date-based events:';
     }
 
     public function event_name_render() {
         $event_name = get_option('dust_events_event_name');
         echo '<input type="text" name="dust_events_event_name" value="' . esc_attr($event_name) . '" />';
-        echo '<p class="description">This is the unique name used to register your regional burn in Dust.</p>';
+        echo '<p class="description">This is the computer-friendly form of the name you used to register your regional burn within Dust.<br>For example, Playa Del Fuego\'s is "playa-del-fuego".</p>';
+    }
+
+    public function start_date_render() {
+        $start_date = get_option('dust_events_start_date');
+        echo '<input type="date" name="dust_events_start_date" value="' . esc_attr($start_date) . '" />';
+        echo '<p class="description">The first day of your regional burn.</p>';
+    }
+
+    public function end_date_render() {
+        $end_date = get_option('dust_events_end_date');
+        echo '<input type="date" name="dust_events_end_date" value="' . esc_attr($end_date) . '" />';
+        echo '<p class="description">The last day of your regional burn.</p>';
     }
 
     public function timezone_render() {
