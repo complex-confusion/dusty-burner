@@ -7,7 +7,11 @@ Many thanks to Dust's creator Damian for creating and supporting the app, and fo
 
 ## Quick Start
 
-1. Go to the Settings for this plugin, and enter the short name for your event. This is the same short event name you see in your Dust admin panel: "https://edit.dust.events/**myBurn**";
+1. Go to the Settings for this plugin, and configure:
+   - **Event Name**: The short name for your event (same as in your Dust admin panel: "https://edit.dust.events/**myBurn**")
+   - **Start Date of Your Burn**: First day of your event (optional - limits displayed schedule/music events)
+   - **End Date of Your Burn**: Last day of your event (optional - limits displayed schedule/music events)
+   - **Event Timezone**: Timezone for your event (used for calendar exports and date filtering)
 2. Use any of the following shortcodes on your WordPress pages:
    ```
    [dust_camps layout="grid" show_coordinates="false" show_images="true"]
@@ -100,6 +104,25 @@ Displays a button to export schedule data as a CSV file.
 ```
 
 ## Configuration Options
+
+### Plugin Settings
+
+Configure these options in **Settings → LunaCode Display Dust Data**:
+
+- **Event Name**: Your burn's unique identifier from Dust (required)
+- **Start Date of Your Burn**: First day of your event (optional)
+  - When set, only schedule and music events on or after this date will be displayed
+  - Repeat day mentions will exclude dates before this date
+- **End Date of Your Burn**: Last day of your event (optional)
+  - When set, only schedule and music events on or before this date will be displayed
+  - Repeat day mentions will exclude dates after this date
+- **Event Timezone**: Timezone for your event location
+  - Used for calendar exports and accurate date filtering
+  - Defaults to your WordPress site's timezone
+
+**Date Filtering**: If no start/end dates are configured, all events from the Dust API will be displayed. Date filtering only applies to schedule and music data (camps and art are not date-based).
+
+**Caching**: Note, you may need to clear WordPress caches before you see the effects of newly added start and end dates.
 
 ### Shortcode Parameters (All Shortcodes)
 
