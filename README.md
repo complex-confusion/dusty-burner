@@ -385,6 +385,40 @@ The plugin meets WCAG AA accessibility standards:
 - **Screen Reader Support**: Proper labeling and announcements for all interactive elements
 - **Visual Focus Indicators**: Clear focus outlines that meet contrast requirements
 
+## React/TypeScript Implementation
+
+This plugin now uses React/TypeScript components for the user interface while maintaining full backward compatibility.
+
+### Setup for Development
+
+1. Install Node.js dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Build React components:
+   ```bash
+   npm run build
+   ```
+
+### Key Features
+
+- **Direct API Integration**: React components fetch data directly from Dust API endpoints
+- **Client-side Processing**: All filtering, sorting, and display logic handled in browser
+- **Modern Architecture**: TypeScript interfaces, CSS modules, custom hooks with useReducer
+- **Accessibility**: WCAG AA compliant with proper ARIA attributes and keyboard navigation
+- **Export Functionality**: CSV/ICS export handled entirely in browser
+- **Responsive Design**: Mobile-first responsive layout
+- **Backward Compatibility**: Existing shortcodes and JavaScript continue to work
+
+### Architecture
+
+- **Components**: Modular React components for each data type and feature
+- **Hooks**: Custom `useData` hook with useReducer for state management
+- **Utils**: API calls, filtering, and data processing utilities
+- **Types**: Comprehensive TypeScript interfaces
+- **Styles**: CSS modules for component styling
+
 ## Browser Support
 
 - Modern browsers (Chrome, Firefox, Safari, Edge)

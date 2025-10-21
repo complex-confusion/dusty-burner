@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dust Events React Test</title>
+    <link rel="stylesheet" href="dist/dust-events-react.css">
+</head>
+<body>
+    <h1>Dust Events React Components Test</h1>
+    
+    <h2>Camps (Grid Layout)</h2>
+    <div 
+        data-dust-react="true"
+        data-dust-type="camps"
+        data-event-name="playa-del-fuego"
+        data-layout="grid"
+        data-show-coordinates="true"
+        data-show-images="true"
+        data-per-page="6"
+    >Loading camps...</div>
+
+    <h2>Schedule (Tabs Display)</h2>
+    <div 
+        data-dust-react="true"
+        data-dust-type="schedule"
+        data-event-name="playa-del-fuego"
+        data-layout="list"
+        data-show-images="true"
+        data-show-export-buttons="all"
+        data-display="tabs"
+        data-per-page="10"
+    >Loading schedule...</div>
+
+    <script src="dist/dust-events-react.js"></script>
+</body>
+</html>

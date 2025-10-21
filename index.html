@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dust Events React Components</title>
+  </head>
+  <body>
+    <div id="root">
+      <!-- Test containers for development -->
+      <h2>Camps</h2>
+      <div 
+        data-dust-react="true"
+        data-dust-type="camps"
+        data-event-name="playa-del-fuego"
+        data-layout="grid"
+        data-show-coordinates="true"
+        data-show-images="true"
+        data-per-page="-1"
+      >Loading camps...</div>
+
+      <h2>Schedule</h2>
+      <div 
+        data-dust-react="true"
+        data-dust-type="schedule"
+        data-event-name="playa-del-fuego"
+        data-layout="grid"
+        data-show-images="true"
+        data-show-export-buttons="all"
+        data-display="tabs"
+      >Loading schedule...</div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

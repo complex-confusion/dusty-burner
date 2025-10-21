@@ -98,6 +98,11 @@ class DisplayDustData {
     }
 
     public function enqueue_scripts() {
+        // Enqueue React build
+        wp_enqueue_script('dust-events-react', plugin_dir_url(__FILE__) . 'dist/dust-events-react.js', array(), self::PLUGIN_VERSION, true);
+        wp_enqueue_style('dust-events-react-css', plugin_dir_url(__FILE__) . 'dist/dust-events-react.css', array(), self::PLUGIN_VERSION);
+        
+        // Keep legacy scripts for backward compatibility
         wp_enqueue_script('jquery');
         wp_enqueue_script('dust-events-js', plugin_dir_url(__FILE__) . 'lunacode-display-dust-data.js', array('jquery'), self::PLUGIN_VERSION, true);
         wp_enqueue_script('dust-ics-export', plugin_dir_url(__FILE__) . 'schedule-ics-button.js', array('jquery'), self::PLUGIN_VERSION, true);
@@ -107,6 +112,15 @@ class DisplayDustData {
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('dust_events_nonce')
         ));
+        
+        // Initialize React components after page load
+        wp_add_inline_script('dust-events-react', '
+            document.addEventListener("DOMContentLoaded", function() {
+                if (window.DustEventsReact && window.DustEventsReact.init) {
+                    window.DustEventsReact.init();
+                }
+            });
+        ');
     }
 
     public function add_admin_menu() {
@@ -493,7 +507,7 @@ class DisplayDustData {
             'show_images' => 'true',
             'show_export_buttons' => 'false',
             'show_export_button' => 'false', // backwards compatibility
-            'display' => 'false'
+            'display' => 'all'
         ), $atts, $tag);
 
         // Backwards compatibility: if old parameter is used, use it
@@ -507,36 +521,42 @@ class DisplayDustData {
             return '<p>Please configure the event name in the plugin settings.</p>';
         }
 
-        $data = self::get_data($type, $event_name);
-
-        if (is_wp_error($data)) {
-            return '<p>Error loading ' . $type . ' data: ' . esc_html($data->get_error_message()) . '</p>';
+        // Create React container with data attributes
+        $container_id = 'dust-' . $type . '-' . uniqid();
+        $start_date = get_option('dust_events_start_date');
+        $end_date = get_option('dust_events_end_date');
+        $timezone = get_option('dust_events_timezone', wp_timezone_string());
+        
+        $container_attrs = array(
+            'id' => $container_id,
+            'data-dust-react' => 'true',
+            'data-dust-type' => $type,
+            'data-event-name' => esc_attr($event_name),
+            'data-layout' => esc_attr($atts['layout']),
+            'data-show-coordinates' => esc_attr($atts['show_coordinates']),
+            'data-show-images' => esc_attr($atts['show_images']),
+            'data-per-page' => esc_attr($atts['per_page']),
+            'data-show-export-buttons' => esc_attr($atts['show_export_buttons']),
+            'data-display' => esc_attr($atts['display'])
+        );
+        
+        if ($start_date) {
+            $container_attrs['data-start-date'] = esc_attr($start_date);
         }
-
-        if (empty($data)) {
-            return '<p>No ' . $type . ' found.</p>';
+        if ($end_date) {
+            $container_attrs['data-end-date'] = esc_attr($end_date);
         }
-
-        // Limit results if specified
-        if ($atts['per_page'] > 0) {
-            $data = array_slice($data, 0, intval($atts['per_page']));
+        if ($timezone) {
+            $container_attrs['data-timezone'] = esc_attr($timezone);
         }
-
-        ob_start();
-
-        if ('schedule' === $type && 'tabs' === $atts['display']) {
-            self::render_schedule_tabs($data, $atts, $event_name);
-        } else {
-            // Show export buttons for schedule if requested
-            if ('schedule' === $type) {
-                $export_buttons = self::get_export_buttons($atts['show_export_buttons'], $event_name);
-                if (!empty($export_buttons)) {
-                    echo '<div class="lunacode-export-buttons">' . $export_buttons . '</div>';
-                }
-            }
-            self::render_data($data, $atts, $type);
+        
+        $attrs_string = '';
+        foreach ($container_attrs as $key => $value) {
+            $attrs_string .= ' ' . $key . '="' . $value . '"';
         }
-        return ob_get_clean();
+        
+        // Return React container with fallback loading message
+        return '<div' . $attrs_string . '>Loading ' . esc_html($type) . '...</div>';
     }
 
     /**
