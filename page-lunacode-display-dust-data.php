@@ -273,11 +273,12 @@ jQuery(document).ready(function($) {
         $container.html('<div class="dust-camps-loading">Loading camps...</div>');
 
         $.ajax({
-            url: dust_camps_ajax.ajax_url,
+            url: dust_events_ajax.ajax_url,
             type: 'POST',
             data: {
-                action: 'get_camps_data',
-                nonce: dust_camps_ajax.nonce
+                action: 'get_dust_data',
+                type: 'camps',
+                nonce: dust_events_ajax.nonce
             },
             success: function(response) {
                 if (response.success && response.data.length > 0) {
@@ -359,7 +360,9 @@ jQuery(document).ready(function($) {
     }
 
     // Initialize search functionality
-    DustCamps.updateResultsCount();
+    if (typeof LunaCode !== 'undefined' && LunaCode.DisplayDustData) {
+        LunaCode.DisplayDustData.updateResultsCount('camps');
+    }
 });
 </script>
 

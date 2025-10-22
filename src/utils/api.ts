@@ -1,13 +1,26 @@
 import { DustItem, DataType } from '../types';
 
-const API_BASE_URL = 'https://data.dust.events/';
+// Get WordPress REST API URL from global object
+const getRestUrl = (): string => {
+  // @ts-ignore - WordPress global object
+  return window.dust_events_ajax?.rest_url || '/wp-json/dust-events/v1/';
+};
 
-export const fetchDustData = async (type: DataType, eventName: string): Promise<DustItem[]> => {
-  const url = `${API_BASE_URL}${eventName}/${type}.json`;
+export const fetchDustData = async (type: DataType, eventName: string, noCache = false): Promise<DustItem[]> => {
+  const restUrl = getRestUrl();
+  const params = new URLSearchParams({
+    event_name: eventName
+  });
+  
+  if (noCache) {
+    params.append('no_cache', '1');
+  }
+  
+  const url = `${restUrl}data/${type}?${params.toString()}`;
   
   const response = await fetch(url, {
     headers: {
-      'User-Agent': 'LunaCode Display Dust Data WordPress Plugin'
+      'Content-Type': 'application/json'
     }
   });
 
@@ -22,7 +35,7 @@ export const fetchDustData = async (type: DataType, eventName: string): Promise<
 export const getImageUrl = (imagePath?: string): string | null => {
   if (!imagePath) return null;
   if (imagePath.includes('://')) return imagePath;
-  return `${API_BASE_URL}${imagePath}`;
+  return `https://data.dust.events/${imagePath}`;
 };
 
 export const parsePinCoordinates = (pinString?: string) => {

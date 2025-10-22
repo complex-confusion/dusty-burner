@@ -77,6 +77,9 @@ class DisplayDustData {
         add_action('wp_ajax_nopriv_export_schedule_ics', array($this, 'export_schedule_ics'));
         add_action('wp_ajax_export_schedule_csv', array($this, 'export_schedule_csv'));
         add_action('wp_ajax_nopriv_export_schedule_csv', array($this, 'export_schedule_csv'));
+        
+        // REST API endpoints for React components
+        add_action('rest_api_init', array($this, 'register_rest_routes'));
     }
 
     public function init() {
@@ -97,6 +100,56 @@ class DisplayDustData {
         }
     }
 
+    /**
+     * Register REST API routes for React components
+     */
+    public function register_rest_routes() {
+        register_rest_route('dust-events/v1', '/data/(?P<type>camps|art|schedule|music)', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'rest_get_data'),
+            'permission_callback' => '__return_true', // Public endpoint
+            'args' => array(
+                'type' => array(
+                    'required' => true,
+                    'validate_callback' => function($param) {
+                        return in_array($param, array('camps', 'art', 'schedule', 'music'));
+                    }
+                ),
+                'event_name' => array(
+                    'required' => false,
+                    'sanitize_callback' => 'sanitize_text_field'
+                ),
+                'no_cache' => array(
+                    'required' => false,
+                    'validate_callback' => function($param) {
+                        return in_array($param, array('1', 'true', 'yes'));
+                    }
+                )
+            )
+        ));
+    }
+
+    /**
+     * REST API handler for getting Dust data
+     */
+    public function rest_get_data($request) {
+        $type = $request->get_param('type');
+        $event_name = $request->get_param('event_name');
+        $no_cache = $request->get_param('no_cache');
+        
+        $data = self::get_data($type, $event_name, $no_cache);
+        
+        if (is_wp_error($data)) {
+            return new \WP_Error(
+                'dust_api_error',
+                $data->get_error_message(),
+                array('status' => 500)
+            );
+        }
+        
+        return \rest_ensure_response($data);
+    }
+
     public function enqueue_scripts() {
         // Enqueue React build
         wp_enqueue_script('dust-events-react', plugin_dir_url(__FILE__) . 'dist/dust-events-react.js', array(), self::PLUGIN_VERSION, true);
@@ -110,11 +163,19 @@ class DisplayDustData {
 
         wp_localize_script('dust-events-js', 'dust_events_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('dust_events_nonce')
+            'nonce' => wp_create_nonce('dust_events_nonce'),
+            'rest_url' => rest_url('dust-events/v1/'),
+            'rest_nonce' => wp_create_nonce('wp_rest')
         ));
         
         // Initialize React components after page load
         wp_add_inline_script('dust-events-react', '
+            // Ensure dust_events_ajax is available for React components
+            window.dust_events_ajax = window.dust_events_ajax || {
+                rest_url: "' . esc_js(rest_url('dust-events/v1/')) . '",
+                rest_nonce: "' . esc_js(wp_create_nonce('wp_rest')) . '"
+            };
+            
             document.addEventListener("DOMContentLoaded", function() {
                 if (window.DustEventsReact && window.DustEventsReact.init) {
                     window.DustEventsReact.init();
@@ -246,9 +307,10 @@ class DisplayDustData {
      *
      * @param string $type 'camps'|'art'|'schedule'|'music'
      * @param string|null $event_name
+     * @param bool $no_cache Skip cache and fetch fresh data
      * @return array|\WP_Error
      */
-    public static function get_data($type, $event_name = null) {
+    public static function get_data($type, $event_name = null, $no_cache = false) {
         // Validate type parameter
         $allowed_types = array('camps', 'art', 'schedule', 'music');
         if (!in_array($type, $allowed_types, true)) {
@@ -265,12 +327,14 @@ class DisplayDustData {
 
         $api_url = self::API_BASE_URL . $event_name . '/' . $type . '.json';
 
-        // Check for cached data (cache for 1 hour)
+        // Check for cached data (cache for 15 minutes, or skip if no_cache)
         $cache_key = 'dust_' . $type . '_' . md5($event_name);
-        $cached_data = get_transient($cache_key);
-
-        if (false !== $cached_data) {
-            return $cached_data;
+        
+        if (!$no_cache) {
+            $cached_data = get_transient($cache_key);
+            if (false !== $cached_data) {
+                return $cached_data;
+            }
         }
 
         // Fetch data from API
@@ -303,8 +367,10 @@ class DisplayDustData {
         // Sort data based on type
         self::sort_data($data, $type);
 
-        // Cache the data
-        set_transient($cache_key, $data, HOUR_IN_SECONDS);
+        // Cache the data for 15 minutes (more responsive updates)
+        if (!$no_cache) {
+            set_transient($cache_key, $data, 15 * 60); // 15 minutes
+        }
 
         return $data;
     }

@@ -45,32 +45,31 @@ export const useData = (
 ) => {
   const [state, dispatch] = useReducer(dataReducer, initialState);
 
+  const loadData = async (noCache = false) => {
+    dispatch({ type: 'FETCH_START' });
+    
+    try {
+      let data = await fetchDustData(type, eventName, noCache);
+      
+      // Apply date filtering for schedule and music
+      if ((type === 'schedule' || type === 'music') && (startDate || endDate)) {
+        data = filterByDateRange(data, startDate, endDate);
+      }
+      
+      // Sort data
+      data = sortData(data, type);
+      
+      dispatch({ type: 'FETCH_SUCCESS', payload: data });
+    } catch (error) {
+      dispatch({ 
+        type: 'FETCH_ERROR', 
+        payload: error instanceof Error ? error.message : 'Failed to load data'
+      });
+    }
+  };
+
   useEffect(() => {
     if (!eventName) return;
-
-    const loadData = async () => {
-      dispatch({ type: 'FETCH_START' });
-      
-      try {
-        let data = await fetchDustData(type, eventName);
-        
-        // Apply date filtering for schedule and music
-        if ((type === 'schedule' || type === 'music') && (startDate || endDate)) {
-          data = filterByDateRange(data, startDate, endDate);
-        }
-        
-        // Sort data
-        data = sortData(data, type);
-        
-        dispatch({ type: 'FETCH_SUCCESS', payload: data });
-      } catch (error) {
-        dispatch({ 
-          type: 'FETCH_ERROR', 
-          payload: error instanceof Error ? error.message : 'Failed to load data'
-        });
-      }
-    };
-
     loadData();
   }, [type, eventName, startDate, endDate]);
 
@@ -78,8 +77,13 @@ export const useData = (
     dispatch({ type: 'SET_SEARCH', payload: term });
   };
 
+  const refresh = () => {
+    loadData(true); // Force fresh data
+  };
+
   return {
     ...state,
-    setSearchTerm
+    setSearchTerm,
+    refresh
   };
 };
