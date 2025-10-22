@@ -1,70 +1,70 @@
 // Handle ICS and CSV export button clicks
-jQuery(document).ready(function ($) {
+document.addEventListener('DOMContentLoaded', function() {
   // Handle clicks on ICS export buttons
-  $(document).on("click", ".dust-ics-export-btn", function () {
-    var $btn = $(this);
-    var originalText = $btn.text();
-    var eventName = $btn.data("event") || "";
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('dust-ics-export-btn')) {
+      const btn = e.target;
+      const originalText = btn.textContent;
+      const eventName = btn.dataset.event || '';
 
-    $btn.prop("disabled", true).text("Generating...");
+      btn.disabled = true;
+      btn.textContent = 'Generating...';
 
-    $.ajax({
-      url: dust_events_ajax.ajax_url,
-      type: "POST",
-      data: {
-        action: "export_schedule_ics",
-        nonce: dust_events_ajax.nonce,
-        event_name: eventName,
-      },
-      xhrFields: {
-        responseType: "blob",
-      },
-      success: function (data) {
-        var blob = new Blob([data], { type: "text/calendar" });
-        var url = window.URL.createObjectURL(blob);
-        var a = document.createElement("a");
+      const formData = new FormData();
+      formData.append('action', 'export_schedule_ics');
+      formData.append('nonce', dust_events_ajax.nonce);
+      formData.append('event_name', eventName);
+
+      fetch(dust_events_ajax.ajax_url, {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.blob())
+      .then(data => {
+        const url = window.URL.createObjectURL(data);
+        const a = document.createElement('a');
         a.href = url;
-        a.download = "schedule.ics";
+        a.download = 'schedule.ics';
         a.click();
         window.URL.revokeObjectURL(url);
-      },
-      complete: function () {
-        $btn.prop("disabled", false).text(originalText);
-      },
-    });
-  });
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      });
+    }
 
-  // Handle clicks on CSV export buttons
-  $(document).on("click", ".dust-csv-export-btn", function () {
-    var $btn = $(this);
-    var originalText = $btn.text();
-    var eventName = $btn.data("event") || "";
+    // Handle clicks on CSV export buttons
+    if (e.target.classList.contains('dust-csv-export-btn')) {
+      const btn = e.target;
+      const originalText = btn.textContent;
+      const eventName = btn.dataset.event || '';
 
-    $btn.prop("disabled", true).text("Generating...");
+      btn.disabled = true;
+      btn.textContent = 'Generating...';
 
-    $.ajax({
-      url: dust_events_ajax.ajax_url,
-      type: "POST",
-      data: {
-        action: "export_schedule_csv",
-        nonce: dust_events_ajax.nonce,
-        event_name: eventName,
-      },
-      xhrFields: {
-        responseType: "blob",
-      },
-      success: function (data) {
-        var blob = new Blob([data], { type: "text/csv" });
-        var url = window.URL.createObjectURL(blob);
-        var a = document.createElement("a");
+      const formData = new FormData();
+      formData.append('action', 'export_schedule_csv');
+      formData.append('nonce', dust_events_ajax.nonce);
+      formData.append('event_name', eventName);
+
+      fetch(dust_events_ajax.ajax_url, {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.blob())
+      .then(data => {
+        const url = window.URL.createObjectURL(data);
+        const a = document.createElement('a');
         a.href = url;
-        a.download = "schedule.csv";
+        a.download = 'schedule.csv';
         a.click();
         window.URL.revokeObjectURL(url);
-      },
-      complete: function () {
-        $btn.prop("disabled", false).text(originalText);
-      },
-    });
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      });
+    }
   });
 });
