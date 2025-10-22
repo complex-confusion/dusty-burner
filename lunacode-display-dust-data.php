@@ -100,7 +100,7 @@ class DisplayDustData {
     public function enqueue_scripts() {
         wp_enqueue_script('jquery');
         wp_enqueue_script('dust-events-js', plugin_dir_url(__FILE__) . 'lunacode-display-dust-data.js', array('jquery'), self::PLUGIN_VERSION, true);
-        wp_enqueue_script('dust-ics-export', plugin_dir_url(__FILE__) . 'lunacode-ddd-schedule-buttons.js', array('jquery'), self::PLUGIN_VERSION, true);
+        wp_enqueue_script('dust-ics-export', plugin_dir_url(__FILE__) . 'lunacode-ddd-schedule-buttons.js', array(), self::PLUGIN_VERSION, true);
         wp_enqueue_style('dust-events-css', plugin_dir_url(__FILE__) . 'lunacode-display-dust-data.css', array(), self::PLUGIN_VERSION);
 
         wp_localize_script('dust-events-js', 'dust_events_ajax', array(
