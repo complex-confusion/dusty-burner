@@ -3,7 +3,9 @@
  */
 // Handle ICS and CSV export button clicks
 document.addEventListener("DOMContentLoaded", function () {
-  // Handle clicks on ICS export buttons
+  // Only add listeners if export buttons exist
+  if (!document.querySelector(".dust-ics-export-btn, .dust-csv-export-btn")) return;
+
   document.addEventListener("click", function (e) {
     if (e.target.classList.contains("dust-ics-export-btn")) {
       const btn = e.target;
