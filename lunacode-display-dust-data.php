@@ -1054,7 +1054,7 @@ class DisplayDustData {
     public function export_schedule_csv() {
         check_ajax_referer('dust_events_nonce', 'nonce');
 
-        $event_name = sanitize_text_field($_POST['event_name'] ?? get_option('dust_events_event_name'));
+        $event_name = sanitize_text_field($_POST['event_name'] ? $_POST['event_name'] : get_option('dust_events_event_name'));
         $data = self::get_data('schedule', $event_name);
 
         if (is_wp_error($data)) {
