@@ -877,8 +877,6 @@ class DisplayDustData {
 
         $timezone_id = get_option('dust_events_timezone', wp_timezone_string());
 
-        error_log("DUST DEBUG: Filtering data - Start: {$start_date}, End: {$end_date}, Timezone: {$timezone_id}");
-
         return array_filter($data, function($item) use ($start_date, $end_date, $timezone_id) {
             if (!isset($item['occurrence']['start_time'])) {
                 return true;

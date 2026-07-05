@@ -32,7 +32,7 @@
           ".dust-camps-item, .dust-art-item, .dust-schedule-item, .dust-music-item",
           function (e) {
             // Handle keyboard events
-            if (e.type === "keydown" && e.which !== 13 && e.which !== 32) {
+            if (e.type === "keydown" && e.key !== "Enter" && e.key !== " ") {
               return;
             }
 
@@ -273,27 +273,27 @@
           var currentIndex = $tabs.index(this);
           var $target = null;
 
-          switch (e.which) {
-            case 37: // Left arrow
-            case 38: // Up arrow
+          switch (e.key) {
+            case "ArrowLeft":
+            case "ArrowUp":
               e.preventDefault();
               $target = currentIndex > 0 ? $tabs.eq(currentIndex - 1) : $tabs.last();
               break;
-            case 39: // Right arrow
-            case 40: // Down arrow
+            case "ArrowRight":
+            case "ArrowDown":
               e.preventDefault();
               $target = currentIndex < $tabs.length - 1 ? $tabs.eq(currentIndex + 1) : $tabs.first();
               break;
-            case 36: // Home
+            case "Home":
               e.preventDefault();
               $target = $tabs.first();
               break;
-            case 35: // End
+            case "End":
               e.preventDefault();
               $target = $tabs.last();
               break;
-            case 13: // Enter
-            case 32: // Space
+            case "Enter":
+            case " ":
               e.preventDefault();
               LunaCode.DisplayDustData.activateTab($(this));
               return;
