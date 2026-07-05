@@ -9,8 +9,8 @@
  * @wordpress-plugin
  * Plugin Name:       LunaCode Display Dust Data
  * Description:       Display camps, art, schedule, and music served by the Dust API with customizable shortcodes and layouts.
- * Version:           0.5.1
- * @version           0.5.1
+ * Version:           0.5.2
+ * @version           0.5.2
  * Requires at least: 4.6
  * Requires PHP:      7.0
  * Author:            Complex Confusion
@@ -18,7 +18,7 @@
  * Author URI:        https://lunacode.com
  * @link              https://lunacode.com
  * @package           LunaCode\DisplayDustData
- * @copyright         2025 LunaCode
+ * @copyright         2026 LunaCode
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * @license           GPL-2.0-or-later
@@ -51,7 +51,7 @@ if (!defined('ABSPATH')) {
 }
 
 class DisplayDustData {
-    const PLUGIN_VERSION = '0.5.1';
+    const PLUGIN_VERSION = '0.5.2';
     const IMAGE_BASE_URL = 'https://data.dust.events/';
     const API_BASE_URL = 'https://data.dust.events/';
 
