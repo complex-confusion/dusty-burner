@@ -1,69 +1,168 @@
-# TEST COVERAGE PLAN FOR LUNACODE DISPLAY DUST DATA PLUGIN
-This document outlines the comprehensive test strategy for ensuring the stability,
-reliability, and data integrity of the plugin's API integration with Dust.io.
----------------------------------------------------------------------------------
-I. PHP BACKEND TESTING (PHPUnit)
----------------------------------------------------------------------------------
-We use PHPUnit as the primary framework because it is the standard for WordPress
-core and plugin development, providing excellent integration with WP_UnitTestCase.
-1. API Integration Tests (dust_get_camps() and similar)
-   - Test Case: Valid API Response. Ensure that when Dust.io returns a 200 OK
-     with valid JSON, the function returns an array of camps.
-   - Test Case: Invalid API Response. Mock the HTTP request to enable a test for
-     how the plugin handles 404 or 500 server errors from Dust.io.
-   - Test Case: Timeout/Network Error. Ensure that if the network request fails, 
-     the plugin handles the timeout gracefully without crashing the page load.
-   - Test Case: Data Sanitization. Verify that data coming from the API (which is
-     not under our control) is properly sanitized before being stored or displayed.
-2. Shortcode Implementation ([dust_camps] and others)
-   - Test Case: Rendering. Check if the shortcode produces expected HTML output
-     consistent with the defined plugin templates.
-   - Test Case: Attribute Handling. Verify that layout="grid" vs layout="list"
-     actually changes the CSS classes in the output.
-   - Test Case: Appendix/Empty State. Ensure a clear "No camps found" message
-     is displayed when the API returns an empty array.
-3. AJAX Handlers (get_camps_data)
-   - Test Case: Nonce Verification. Verify that the request is rejected if
-     the nonce is incorrect or invalid to prevent CSRF attacks.
-   - Test Case: Response Format. Ensure the AJAX response is a valid JSON object
-     containing the data requested.
-   - Test Case: Response Time. Measure the performance impact of API requests
-     to ensure they do not exceed acceptable latency thresholds for frontend users.
-     (THIS IS A TEST OF BASIC WORDPRESS FUNCTIONALITY if it's an AJAX wrapper).
-4. PHP Template/Page Logic (page-lunacode-display-dust-data.php)
-   - Test Case: Page Header rendering. Verify that the WordPress theme properly 
-     integrates with the custom page template hooks.
-     THIS IS A TEST OF BASIC WORDPRESS FUNCTIONALITY.
-   - Test case: Custom Layout Logic. Verify that the first 6 camps are sliced from the
-     the array in the "Featured Camps" section.
----------------------------------------------------------------------------------
-II. JAVASCRIPT FRONTEND TESTING (QUnit)
----------------------------------------------------------------------------------
-While PHPUnit is for PHP logic, we use QUnit as the standard WordPress JavaScript
-testing framework to ensure that the frontend "display" logic works correctly
-within the browser environment.
-1. LunaCode.DisplayDustData Logic (lunacode-display-dust-data.js)
-   - Test Case: Tab Switching. Verify that `activateTab` and `activateFilter` 
-     correctly update the active CSS classes and visibility of data containers.
-   - Test Case: Search Filtering. Ensure that when a user types in the search box,
-     the plugin's JS logic filters the current list of camps based on camp names and descriptions.
-   - Test Case: Event Triggering. Verify that `$(document).on("dustItemClicked", ...)`
-     is triggered when an item is actually clicked.
-2. Dynamic Loading (AJAX in page-lunacode-display-dust-data.php)
-   - Test Case: Loading State. Verify that the "Load More" button is disabled during
-     the AJAX request to prevent duplicate simultaneous queries.
-   - Test Case: HTML Builder. `buildCampsHTML` function logic: verify that it returns
-     the expected HTML string when given a valid camp data object.
-   - Test Case: Map Link Generation. Ensure the coordinates (lat/lng) are 
-     correctly extracted and formatted for external map URLs.
-   - Test case: Google Maps URL construction. Verify that the generated links 
-     direct the user to the correct geographic coordinates of the specific camp.
----------------------------------------------------------------------------------
-III. CROSS-FILE INTEGRATION TESTING
----------------------------------------------------------------------------------
-1. Data Flow Path: API -> PHP Function -> Shortcode/Template -> JS Filtering.
-   - Test Case: End-to-End flow. Trigger a request to the Dust.io API and verify 
-     that the data is processed by PHP and correctly rendered in the browser DOM.
-   - Test Case: Validation of data consistency. Ensure that the camp name, description,
-     and coordinates displayed on the frontend exactly match the source data provided by the Dust.io API endpoint.
+# Test Plan: LunaCode Display Dust Data
 
+This plan covers the behavior documented in `README.md` and implemented by the
+plugin. Tests should use fixed fixtures and mocks rather than making live Dust
+API requests, so they remain deterministic and do not depend on network access.
+
+## Test setup
+
+There is no test harness in this repository yet. Before implementing this plan:
+
+- Add a WordPress PHPUnit test bootstrap and load the plugin in a WordPress test
+  installation. Use `WP_UnitTestCase` and WordPress HTTP API mocks/filters.
+- Add a QUnit browser test page for the plugin JavaScript, with jQuery and DOM
+  fixtures matching the plugin markup.
+- Keep API response fixtures for camps, art, schedule, and music in test data.
+- Clear plugin transients between tests and restore WordPress options, hooks, and
+  globals during teardown.
+
+The tests below describe required behavior; they are not claims that the tests
+or test runners already exist.
+
+## 1. PHP and WordPress tests (PHPUnit)
+
+### API retrieval: `DisplayDustData::get_data()`
+
+- For each supported type (`camps`, `art`, `schedule`, and `music`), return
+  decoded fixture data after a mocked 200 response.
+- Construct the expected endpoint from the event name and type. Verify that an
+  explicit event name takes precedence over the configured option.
+- Return `WP_Error` for unsupported types, missing event names, HTTP errors
+  (including 404 and 500), transport/network errors, invalid JSON, and valid JSON
+  that is not an object or array.
+- Verify valid results are cached for one hour, a cache hit avoids a second HTTP
+  request, and different event names/types do not share cache entries.
+- Verify camps and art sort by name; schedule and music sort by camp (including
+  `hosted_by_camp`) and then title.
+- Verify only schedule and music are filtered by configured start/end dates,
+  including boundary dates, missing bounds, repeat-day behavior, and configured
+  timezone. Camps and art should not be date-filtered.
+
+### Shortcodes and rendered markup
+
+- Exercise `[dust_camps]`, `[dust_art]`, `[dust_schedule]`, and `[dust_music]`
+  with fixture data, empty results, API errors, and no configured event name.
+- Check default and explicit shortcode attributes: event name, grid/list layout,
+  `show_coordinates`, `show_images`, and `per_page`. In particular, verify the
+  documented default of showing coordinates and that `per_page` limits output.
+- Verify camp/art descriptions, names, image URLs, coordinates, and links are
+  escaped or sanitized for their output context; malformed optional pin data
+  must not produce warnings or break rendering.
+- Verify schedule export-button options (`all`/`true`, `none`/`false`, `csv`,
+  `ics`, and comma-separated values), legacy `show_export_button`, and
+  `display="tabs"`.
+- Verify the two export-button shortcodes honor their `event_name` and `text`
+  attributes and escape generated HTML.
+- Test the public theme functions
+  `lunacode_display_dust_data_get()` and
+  `lunacode_display_dust_data_render()` against success, empty data, and errors.
+
+### Plugin settings and script setup
+
+- Verify the settings page registers the event name, start date, end date, and
+  timezone options and renders their current values safely.
+- Verify the plugin enqueues its frontend assets and localizes the expected
+  `dust_events_ajax.ajax_url` and nonce for the frontend scripts.
+- Verify missing settings use documented fallbacks, including the WordPress
+  timezone when no event timezone is configured.
+
+### Schedule tabs and event grouping
+
+- Cover empty and populated tab data, recurring/repeating events, multi-day
+  events, missing day/title fields, and duplicate day labels.
+- Verify rendered tabs and panels have unique IDs and matching ARIA references,
+  exactly one initially selected tab, and matching selected/visible panel state.
+- Verify each tab's events are ordered all-day first, then start time, then title.
+- Verify repeat-day helpers exclude the current day, return distinct sorted
+  days, and honor configured date bounds.
+
+### AJAX handlers
+
+- For `get_dust_data`, verify valid nonce behavior for logged-in and public
+  requests, rejection of invalid/missing nonces, and handling of missing or
+  invalid `type`.
+- Verify optional `event_name` is sanitized and passed through, and response
+  shape is `{ success: true, data: [...] }` with a JSON list for each supported
+  type; API errors must produce an error response.
+- Verify the registered action names match the frontend request names.
+- Do not set an arbitrary response-time limit in unit tests. If latency is a
+  requirement, define an explicit budget and measure it in a separate benchmark
+  with controlled network conditions.
+
+### Schedule exports
+
+- Verify CSV headers, row values, image URL handling, descriptions, and valid CSV
+  quoting for commas, quotes, and newlines.
+- Verify ICS calendar/event structure, line endings, timezone/VTIMEZONE output,
+  start/end-time handling (including missing end-time fallback), and escaping
+  of backslashes, commas, semicolons, and newlines.
+- Verify both export handlers check the nonce, use the requested/configured
+  event, and report API failures without returning a success-shaped download.
+
+### Template behavior
+
+- Render `page-lunacode-display-dust-data.php` with WordPress template helpers
+  stubbed or in a WordPress integration test.
+- Verify the featured-camp section uses `lunacode_display_dust_data_get('camps')`
+  and displays at most the first six camps; verify empty/error data uses the
+  fallback message.
+- Verify the dynamic loader uses the plugin's localized `dust_events_ajax`
+  configuration and `get_dust_data` action with `type=camps`.
+
+## 2. JavaScript browser tests (QUnit)
+
+### `lunacode-display-dust-data.js`
+
+- Verify search filtering for camps, art, schedule, and music using name,
+  description, and camp fields; check clearing search and result counts.
+- Verify `dustItemClicked` fires with the expected UID/name/type for click,
+  Enter, and Space, but not for other keys or clicks on links.
+- Verify image-error placeholders and lazy-loading behavior with and without
+  `IntersectionObserver`.
+- Verify schedule tab click behavior updates active classes, `aria-selected`,
+  `tabindex`, panel visibility, and the screen-reader announcement.
+- Verify arrow keys wrap correctly and Home/End move focus to first/last tabs;
+  Enter/Space activate the focused tab.
+- Verify the public refresh, lookup, highlight, display-toggle, and tab-switch
+  methods handle valid items/containers and missing ones without exceptions.
+
+### Camps page dynamic loader
+
+- Verify loading text/button disabled state, success with data, empty results,
+  failed requests, and re-enabling/restoring the button in every completion path.
+- Verify refresh repeats the request, and grid/list selection applies the chosen
+  layout to loaded results.
+- Verify camps render using the same `.dust-camps-*` class names as the plugin,
+  so search, result counts, styling, and item events work on dynamically loaded
+  content.
+- Verify names, descriptions, UIDs, image URLs, and map values containing HTML
+  or quote characters are rendered as text/escaped attributes, not executable
+  markup. Malformed/missing pins must not throw.
+- Verify numeric latitude/longitude are represented correctly in Google Maps
+  links and links opened in a new tab include safe `rel` attributes.
+
+### `schedule-ics-button.js`
+
+- Verify ICS and CSV requests send the configured URL, action, nonce, and event
+  name; buttons disable while pending and restore their original text afterward.
+- Verify successful responses trigger a download with the expected MIME type and
+  a failed request does not initiate a download.
+
+## 3. Cross-file integration tests
+
+- With mocked Dust fixtures, exercise API fetch -> cache/date/sort processing ->
+  shortcode or template rendering -> browser filtering.
+- Assert representative camp names, descriptions, image URLs, and coordinates
+  match the fixture after output escaping/formatting. Assert schedule/music date
+  filtering and schedule tabs match the same fixture.
+- Exercise the browser AJAX request against the WordPress handler and confirm
+  the action name, nonce, response shape, error handling, and UI state agree.
+- Keep live Dust API checks out of required CI tests; if desired, run them
+  separately as optional smoke tests.
+
+## Coverage boundaries
+
+Do not spend plugin test coverage on WordPress core/theme behavior such as
+whether `get_header()` works. Test only this template's use of WordPress hooks,
+plugin functions, markup, and failure states. Do not test undocumented
+performance thresholds until the acceptable budget is specified.
