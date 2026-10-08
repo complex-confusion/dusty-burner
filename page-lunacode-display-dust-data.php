@@ -39,12 +39,12 @@ get_header(); ?>
             </div>
 
             <!-- Method 2: Using PHP Functions (For theme developers) -->
-            <?php if (function_exists('dust_get_camps')) : ?>
+            <?php if (function_exists('lunacode_display_dust_data_get')) : ?>
                 <div class="camps-section-advanced">
                     <h2>Featured Camps (Custom Layout)</h2>
 
                     <?php
-                    $camps = dust_get_camps(); // Get camps data
+                    $camps = lunacode_display_dust_data_get('camps');
 
                     if (!is_wp_error($camps) && !empty($camps)) :
                         // Show only first 6 camps in a custom layout
@@ -53,10 +53,10 @@ get_header(); ?>
 
                         <div class="featured-camps-grid">
                             <?php foreach ($featured_camps as $camp) :
-                                $name = esc_html($camp['name']);
-                                $description = wp_trim_words(wp_kses_post($camp['description']), 20);
-                                $image_url = !empty($camp['imageUrl']) ? 'https://data.dust.events/' . $camp['imageUrl'] : null;
-                                $pin_data = json_decode($camp['pin'], true);
+                                $name = esc_html($camp['name'] ?? '');
+                                $description = wp_trim_words(wp_kses_post($camp['description'] ?? ''), 20);
+                                $image_url = !empty($camp['imageUrl']) ? 'https://data.dust.events/' . ltrim($camp['imageUrl'], '/') : null;
+                                $pin_data = json_decode($camp['pin'] ?? '', true);
                             ?>
 
                                 <div class="featured-camp-card">
@@ -273,17 +273,20 @@ jQuery(document).ready(function($) {
         $container.html('<div class="dust-camps-loading">Loading camps...</div>');
 
         $.ajax({
-            url: dust_camps_ajax.ajax_url,
+            url: dust_events_ajax.ajax_url,
             type: 'POST',
             data: {
-                action: 'get_camps_data',
-                nonce: dust_camps_ajax.nonce
+                action: 'get_dust_data',
+                type: 'camps',
+                nonce: dust_events_ajax.nonce
             },
             success: function(response) {
-                if (response.success && response.data.length > 0) {
+                if (response.success && Array.isArray(response.data) && response.data.length > 0) {
                     // Build HTML from camp data
-                    var html = buildCampsHTML(response.data, 'grid');
-                    $container.html('<div class="dust-camps-container dust-camps-grid">' + html + '</div>');
+                    var layout = $('#camp-layout-selector').val() === 'list' ? 'list' : 'grid';
+                    var html = buildCampsHTML(response.data);
+                    $container.html('<div class="dust-camps-container dust-camps-' + layout + '">' + html + '</div>');
+                    LunaCode.DisplayDustData.updateResultsCount('camps');
                 } else {
                     $container.html('<div class="dust-camps-no-results">No camps found.</div>');
                 }
@@ -313,39 +316,50 @@ jQuery(document).ready(function($) {
     });
 
     // Function to build camps HTML
-    function buildCampsHTML(camps, layout) {
+    function buildCampsHTML(camps) {
         var html = '';
 
         camps.forEach(function(camp) {
-            var imageUrl = camp.imageUrl ? 'https://data.dust.events/' + camp.imageUrl : null;
-            var pinData = camp.pin ? JSON.parse(camp.pin) : null;
+            var imageUrl = camp.imageUrl ? 'https://data.dust.events/' + String(camp.imageUrl).replace(/^\/+/, '') : null;
+            var pinData = null;
+            try {
+                pinData = camp.pin ? JSON.parse(camp.pin) : null;
+            } catch (error) {
+                pinData = null;
+            }
 
-            html += '<div class="dust-camp-item" data-uid="' + camp.uid + '">';
+            html += '<div class="dust-camps-item" data-uid="' + escapeHtml(camp.uid || '') + '">';
 
             if (imageUrl) {
-                html += '<div class="dust-camp-image">';
-                html += '<img src="' + imageUrl + '" alt="' + camp.name + '" loading="lazy" />';
+                html += '<div class="dust-camps-image">';
+                html += '<img src="' + escapeHtml(imageUrl) + '" alt="' + escapeHtml(camp.name || '') + '" loading="lazy" />';
                 html += '</div>';
             }
 
-            html += '<div class="dust-camp-content">';
-            html += '<h3 class="dust-camp-name">' + camp.name + '</h3>';
+            html += '<div class="dust-camps-content">';
+            html += '<h3 class="dust-camps-name">' + escapeHtml(camp.name || '') + '</h3>';
 
             if (camp.description) {
-                html += '<div class="dust-camp-description">' + camp.description + '</div>';
+                html += '<div class="dust-camps-description">' + escapeHtml(camp.description) + '</div>';
             }
 
             if (pinData) {
-                html += '<div class="dust-camp-coordinates">';
+                html += '<div class="dust-camps-coordinates">';
                 html += '<strong>Coordinates:</strong> ';
 
-                if (pinData.lat && pinData.lng) {
-                    html += 'GPS - Lat: ' + pinData.lat + ', Lng: ' + pinData.lng;
-                    html += '<div class="dust-camp-map-link">';
-                    html += '<a href="https://www.google.com/maps?q=' + pinData.lat + ',' + pinData.lng + '" target="_blank">View on Google Maps</a>';
+                if (pinData.lat !== undefined && pinData.lat !== null && pinData.lat !== '' &&
+                    pinData.lng !== undefined && pinData.lng !== null && pinData.lng !== '' &&
+                    isFinite(Number(pinData.lat)) && isFinite(Number(pinData.lng)) &&
+                    Number(pinData.lat) >= -90 && Number(pinData.lat) <= 90 &&
+                    Number(pinData.lng) >= -180 && Number(pinData.lng) <= 180) {
+                    var latitude = Number(pinData.lat);
+                    var longitude = Number(pinData.lng);
+                    html += 'GPS - Lat: ' + latitude + ', Lng: ' + longitude;
+                    html += '<div class="dust-camps-map-link">';
+                    html += '<a href="https://www.google.com/maps?q=' + latitude + ',' + longitude + '" target="_blank" rel="noopener noreferrer">View on Google Maps</a>';
                     html += '</div>';
-                } else if (pinData.x && pinData.y) {
-                    html += 'Map Position - X: ' + pinData.x + ', Y: ' + pinData.y;
+                } else if (pinData.x !== undefined && pinData.y !== undefined) {
+                    html += 'Map Position - X: ' + escapeHtml(pinData.x) + ', Y: ' + escapeHtml(pinData.y);
                 }
 
                 html += '</div>';
@@ -358,8 +372,20 @@ jQuery(document).ready(function($) {
         return html;
     }
 
+    function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, function(character) {
+            return {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            }[character];
+        });
+    }
+
     // Initialize search functionality
-    DustCamps.updateResultsCount();
+    LunaCode.DisplayDustData.updateResultsCount('camps');
 });
 </script>
 
