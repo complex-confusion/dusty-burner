@@ -25,7 +25,7 @@
  * Text Domain:       lunacode-display-dust-data
  */
 
-namespace LunaCode;
+namespace LunaCode {
 
 // WordPress functions
 use function add_action, add_options_page, add_settings_field, add_settings_section, add_shortcode, admin_url,
@@ -1386,8 +1386,10 @@ class DisplayDustData {
 
 // Initialize the plugin
 new DisplayDustData();
+}
 
 // Template functions for theme developers (global namespace)
+namespace {
 
 /**
  * For a theme: Get array of Burn items - camps, art, events, or music
@@ -1434,4 +1436,5 @@ function dust_schedule_ics_button($event_name = '', $text = '') {
  */
 function dust_schedule_csv_button($event_name = '', $text = '') {
     return \LunaCode\DisplayDustData::render_csv_button($event_name, $text);
+}
 }
