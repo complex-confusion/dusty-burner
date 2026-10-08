@@ -4,3 +4,4 @@
 .amazonq
 composer.*
 vendor
+.DS_Store
