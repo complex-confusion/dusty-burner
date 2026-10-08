@@ -10,33 +10,32 @@ The initial PHPUnit harness is in place. It loads the plugin inside the
 WordPress test suite and includes a smoke test using the WordPress HTTP API
 filter; the broader test coverage below remains to be implemented.
 
-To set up the test library, clone the WordPress development repository and copy
-its sample test configuration:
+The bootstrap defaults to the WordPress test library in the sibling
+`../wordpress-develop/tests/phpunit/` directory. From the plugin repository
+root, create the test configuration at the root of that checkout:
 
 ```sh
-git clone --depth 1 https://github.com/WordPress/wordpress-develop.git /tmp/wordpress-develop
-export WP_TESTS_DIR=/tmp/wordpress-develop/tests/phpunit
-cp /tmp/wordpress-develop/wp-tests-config-sample.php "$WP_TESTS_DIR/wp-tests-config.php"
+cp ../wordpress-develop/wp-tests-config-sample.php ../wordpress-develop/wp-tests-config.php
 ```
 
-Edit `$WP_TESTS_DIR/wp-tests-config.php` before running tests: set `ABSPATH` to
-the WordPress core directory to test (for example, the adjacent
-`../wordpress-src/wordpress/` checkout), and set the `DB_NAME`, `DB_USER`,
-`DB_PASSWORD`, and `DB_HOST` values for a disposable MySQL test database. The
-test suite drops tables with its configured prefix, so never point it at a
-production or shared database. The test configuration supplies WordPress
-settings; the core checkout does not need its own `wp-config.php`.
+Edit `../wordpress-develop/wp-tests-config.php`: the sample's `ABSPATH` value
+(`dirname( __FILE__ ) . '/src/'`) is correct for this checkout. Set `DB_NAME`,
+`DB_USER`, `DB_PASSWORD`, and `DB_HOST` to a disposable MySQL test database.
+The test suite drops tables with its configured prefix, so never point it at a
+production or shared database. This test configuration is separate from
+WordPress's regular `wp-config.php`; no regular `wp-config.php` is needed.
 
-Then run the suite from the plugin repository root:
+Run the suite from the plugin repository root:
 
 ```sh
 vendor/bin/phpunit -c phpunit.xml.dist
 ```
 
-The PHPUnit executable may also be supplied globally as `phpunit`. Keep
-`WP_TESTS_DIR` exported in the shell used to run PHPUnit. If the configured
-WordPress test library or database is unavailable, the test command cannot
-bootstrap WordPress and will report that setup requirement.
+If your WordPress development checkout is elsewhere, set `WP_TESTS_DIR` to its
+`tests/phpunit/` directory before running PHPUnit. The PHPUnit executable may
+also be supplied globally as `phpunit`. If the test library or database is
+unavailable, the test command cannot bootstrap WordPress and will report that
+setup requirement.
 
 - Add a QUnit browser test page for the plugin JavaScript, with jQuery and DOM
   fixtures matching the plugin markup.

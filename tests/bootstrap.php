@@ -3,15 +3,18 @@
 $tests_dir = getenv('WP_TESTS_DIR');
 
 if (false === $tests_dir || '' === $tests_dir) {
-    throw new RuntimeException('Set WP_TESTS_DIR to the WordPress PHPUnit test-library directory.');
+    $tests_dir = dirname(__DIR__) . '/../wordpress-develop/tests/phpunit';
 }
 
+$tests_dir = realpath($tests_dir) ?: $tests_dir;
 $functions_file = rtrim($tests_dir, DIRECTORY_SEPARATOR) . '/includes/functions.php';
 $bootstrap_file = rtrim($tests_dir, DIRECTORY_SEPARATOR) . '/includes/bootstrap.php';
 
 if (!is_file($functions_file) || !is_file($bootstrap_file)) {
     throw new RuntimeException(
-        'WP_TESTS_DIR must contain includes/functions.php and includes/bootstrap.php: ' . $tests_dir
+        'WordPress PHPUnit test files were not found in '
+        . $tests_dir
+        . '. Set WP_TESTS_DIR to the tests/phpunit directory or place wordpress-develop beside this repository.'
     );
 }
 
