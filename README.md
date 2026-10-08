@@ -258,10 +258,10 @@ $(document).on("dustItemClicked", function (event, data) {
 
 ```php
 // Get any type of data
-$camps = dust_get_data('camps', 'your-event-name');
-$art = dust_get_data('art', 'your-event-name');
-$schedule = dust_get_data('schedule', 'your-event-name');
-$music = dust_get_data('music', 'your-event-name');
+$camps = lunacode_display_dust_data_get('camps', 'your-event-name');
+$art = lunacode_display_dust_data_get('art', 'your-event-name');
+$schedule = lunacode_display_dust_data_get('schedule', 'your-event-name');
+$music = lunacode_display_dust_data_get('music', 'your-event-name');
 
 // Parse coordinates (camps/art)
 $pin_data = json_decode($item['pin'], true);
@@ -354,17 +354,16 @@ Create custom display templates by overriding the render functions or creating y
 
 ```php
 // Display any data type programmatically
-dust_display_data('camps', 'your-event', array('layout' => 'grid'));
-dust_display_data('art', 'your-event', array('show_images' => 'true'));
-dust_display_data('schedule', 'your-event', array('layout' => 'list'));
-dust_display_data('music', 'your-event', array('per_page' => 10));
+lunacode_display_dust_data_render('camps', 'your-event', array('layout' => 'grid'));
+lunacode_display_dust_data_render('art', 'your-event', array('show_images' => 'true'));
+lunacode_display_dust_data_render('schedule', 'your-event', array('layout' => 'list'));
+lunacode_display_dust_data_render('music', 'your-event', array('layout' => 'list'));
 
 // Export buttons
 echo dust_schedule_ics_button();
-echo dust_schedule_ics_button('Custom Text');
-echo dust_schedule_ics_button('Download Events', 'myburn2024');
+echo dust_schedule_ics_button('myburn2024', 'Download Events');
 echo dust_schedule_csv_button();
-echo dust_schedule_csv_button('Download CSV', 'myburn2024');
+echo dust_schedule_csv_button('myburn2024', 'Download CSV');
 
 ```
 
