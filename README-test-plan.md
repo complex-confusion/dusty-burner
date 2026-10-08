@@ -6,10 +6,38 @@ API requests, so they remain deterministic and do not depend on network access.
 
 ## Test setup
 
-There is no test harness in this repository yet. Before implementing this plan:
+The initial PHPUnit harness is in place. It loads the plugin inside the
+WordPress test suite and includes a smoke test using the WordPress HTTP API
+filter; the broader test coverage below remains to be implemented.
 
-- Add a WordPress PHPUnit test bootstrap and load the plugin in a WordPress test
-  installation. Use `WP_UnitTestCase` and WordPress HTTP API mocks/filters.
+To set up the test library, clone the WordPress development repository and copy
+its sample test configuration:
+
+```sh
+git clone --depth 1 https://github.com/WordPress/wordpress-develop.git /tmp/wordpress-develop
+export WP_TESTS_DIR=/tmp/wordpress-develop/tests/phpunit
+cp /tmp/wordpress-develop/wp-tests-config-sample.php "$WP_TESTS_DIR/wp-tests-config.php"
+```
+
+Edit `$WP_TESTS_DIR/wp-tests-config.php` before running tests: set `ABSPATH` to
+the WordPress core directory to test (for example, the adjacent
+`../wordpress-src/wordpress/` checkout), and set the `DB_NAME`, `DB_USER`,
+`DB_PASSWORD`, and `DB_HOST` values for a disposable MySQL test database. The
+test suite drops tables with its configured prefix, so never point it at a
+production or shared database. The test configuration supplies WordPress
+settings; the core checkout does not need its own `wp-config.php`.
+
+Then run the suite from the plugin repository root:
+
+```sh
+vendor/bin/phpunit -c phpunit.xml.dist
+```
+
+The PHPUnit executable may also be supplied globally as `phpunit`. Keep
+`WP_TESTS_DIR` exported in the shell used to run PHPUnit. If the configured
+WordPress test library or database is unavailable, the test command cannot
+bootstrap WordPress and will report that setup requirement.
+
 - Add a QUnit browser test page for the plugin JavaScript, with jQuery and DOM
   fixtures matching the plugin markup.
 - Keep API response fixtures for camps, art, schedule, and music in test data.
