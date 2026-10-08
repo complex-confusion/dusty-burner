@@ -36,8 +36,8 @@ use function add_action, add_options_page, add_settings_field, add_settings_sect
     wp_send_json_error, wp_send_json_success;
 
 // PHP functions
-use function array_keys, array_slice, defined, explode, header, implode, in_array, intval, json_decode, json_last_error, md5,
-    ob_get_clean, ob_start, str_replace, strcmp, strip_tags, strpos, trim, uasort, ucfirst, uniqid;
+use function array_keys, array_slice, array_values, defined, explode, header, implode, in_array, intval, is_array, json_decode,
+    json_last_error, md5, ob_get_clean, ob_start, str_replace, strcmp, strip_tags, strpos, trim, uasort, ucfirst, uniqid;
 
 // Classes
 use WP_Error, DateTime, DateInterval, DateTimeZone;
@@ -280,6 +280,9 @@ class DisplayDustData {
         if (json_last_error() !== JSON_ERROR_NONE) {
             return new WP_Error('json_error', 'Invalid JSON response');
         }
+        if (!is_array($data)) {
+            return new WP_Error('invalid_data', 'API response must contain a JSON object or array');
+        }
 
         // Filter date-based data
         if ('schedule' === $type || 'music' === $type) {
@@ -422,14 +425,15 @@ class DisplayDustData {
     public function ajax_get_data() {
         check_ajax_referer('dust_events_nonce', 'nonce');
 
-        $type = sanitize_text_field($_POST['type']);
-        $data = self::get_data($type);
+        $type = sanitize_text_field($_POST['type'] ?? '');
+        $event_name = sanitize_text_field($_POST['event_name'] ?? '');
+        $data = self::get_data($type, $event_name);
 
         if (is_wp_error($data)) {
             wp_send_json_error($data->get_error_message());
         }
 
-        wp_send_json_success($data);
+        wp_send_json_success(array_values($data));
     }
 
     /**
@@ -488,7 +492,7 @@ class DisplayDustData {
         $atts = shortcode_atts(array(
             'event_name' => '',
             'layout' => 'grid',
-            'show_coordinates' => 'false',
+            'show_coordinates' => 'true',
             'per_page' => -1,
             'show_images' => 'true',
             'show_export_buttons' => 'false',
@@ -1377,7 +1381,7 @@ class DisplayDustData {
      *
      * @param string $type 'camps'|'art'|'schedule'|'music'
      * @param string|null $event_name
-     * @return array
+     * @return array|\WP_Error
      */
     public static function get_dust_data($type, $event_name = null) {
         return self::get_data($type, $event_name);
@@ -1395,7 +1399,7 @@ namespace {
  * For a theme: Get array of Burn items - camps, art, events, or music
  * @param string $type 'camps'|'art'|'schedule'|'music'
  * @param string|null $event_name
- * @return array
+ * @return array|\WP_Error
  */
 function lunacode_display_dust_data_get($type, $event_name = null) {
     return \LunaCode\DisplayDustData::get_dust_data($type, $event_name);
@@ -1404,9 +1408,9 @@ function lunacode_display_dust_data_get($type, $event_name = null) {
 /**
  * Output an entire list of Burn items as HTML
  *
- * @param array[] $data Array of item arrays
- * @param array $options
  * @param string $type 'camps'|'art'|'schedule'|'music'
+ * @param string|null $event_name
+ * @param array $options
  * @return void
  */
 function lunacode_display_dust_data_render($type, $event_name = null, $options = array()) {
