@@ -37,10 +37,11 @@ core and plugin development, providing excellent integration with WP_UnitTestCas
    - Test case: Custom Layout Logic. Verify that the first 6 camps are sliced from the
      the array in the "Featured Camps" section.
 ---------------------------------------------------------------------------------
-II. JAVASCRIPT FRONTEND TESTING (Jest / Cypress)
+II. JAVASCRIPT FRONTEND TESTING (QUnit)
 ---------------------------------------------------------------------------------
-While PHPUnit is for PHP logic, we use Jest for unit tests and Cypress for E2E tests
-to ensure the "display" part of the plugin actually works in a browser.
+While PHPUnit is for PHP logic, we use QUnit as the standard WordPress JavaScript
+testing framework to ensure that the frontend "display" logic works correctly
+within the browser environment.
 1. LunaCode.DisplayDustData Logic (lunacode-display-dust-data.js)
    - Test Case: Tab Switching. Verify that `activateTab` and `activateFilter` 
      correctly update the active CSS classes and visibility of data containers.
@@ -65,3 +66,4 @@ III. CROSS-FILE INTEGRATION TESTING
      that the data is processed by PHP and correctly rendered in the browser DOM.
    - Test Case: Validation of data consistency. Ensure that the camp name, description,
      and coordinates displayed on the frontend exactly match the source data provided by the Dust.io API endpoint.
+
