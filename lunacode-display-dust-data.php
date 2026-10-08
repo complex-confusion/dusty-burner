@@ -1,3 +1,4 @@
+<?php
 /**
  * LunaCode Display Dust Data
  *
