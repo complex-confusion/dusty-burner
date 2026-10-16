@@ -1,0 +1,16 @@
+{
+    "name": "lunacode/display-dust-data",
+    "description": "This plugin displays Dust's complete data including camps, art, schedule, and music from regional Burning Man events or from Burning Man itself.",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Lunacode\\DisplayDustData\\": "includes/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Michael Greisman"
+        }
+    ],
+    "require": {}
+}
