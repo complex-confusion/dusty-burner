@@ -17,7 +17,7 @@
  * @author            Complex Confusion
  * Author URI:        https://lunacode.com
  * @link              https://lunacode.com
- * @package           LunaCode\DisplayDustData
+ * @package           DisplayDustData
  * @copyright         2025 LunaCode
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -25,7 +25,11 @@
  * Text Domain:       lunacode-display-dust-data
  */
 
-namespace LunaCode;
+declare(strict_types=1);
+
+namespace LunaCode\DisplayDustData {
+
+require __DIR__ ."/vendor/autoload.php";
 
 // WordPress functions
 use function add_action, add_options_page, add_settings_field, add_settings_section, add_shortcode, admin_url,
@@ -435,26 +439,26 @@ class DisplayDustData {
     /**
      * Shortcode handlers for each data type
      */
-    public function display_camps_shortcode($atts, $content = null) {
+    public function display_camps_shortcode(array $atts, $content = null) {
         return $this->display_shortcode($atts, $content, 'dust_camps', 'camps');
     }
 
-    public function display_art_shortcode($atts, $content = null) {
+    public function display_art_shortcode(array $atts, $content = null) {
         return $this->display_shortcode($atts, $content, 'dust_art', 'art');
     }
 
-    public function display_schedule_shortcode($atts, $content = null) {
+    public function display_schedule_shortcode(array $atts, $content = null) {
         return $this->display_shortcode($atts, $content, 'dust_schedule', 'schedule');
     }
 
-    public function display_music_shortcode($atts, $content = null) {
+    public function display_music_shortcode(array $atts, $content = null) {
         return $this->display_shortcode($atts, $content, 'dust_music', 'music');
     }
 
     /**
      * Shortcode for ICS export button
      */
-    public function display_ics_button_shortcode($atts, $content = null) {
+    public function display_ics_button_shortcode(array $atts, $content = null) {
         $atts = shortcode_atts(array(
             'text' => '',
             'event_name' => ''
@@ -466,7 +470,7 @@ class DisplayDustData {
     /**
      * Shortcode for CSV export button
      */
-    public function display_csv_button_shortcode($atts, $content = null) {
+    public function display_csv_button_shortcode(array $atts, $content = null) {
         $atts = shortcode_atts(array(
             'text' => '',
             'event_name' => ''
@@ -481,10 +485,10 @@ class DisplayDustData {
      *
      * @param array $atts Shortcode attributes
      * @param string|null $content Shortcode content
-     * @param string $tag Shortcode tag name
+     * @param string $tag Shortcode tag name ('camps'|'art'|'schedule'|'music')
      * @return string HTML output
      */
-    private function display_shortcode($atts, $content = null, $tag = '', $type = '') {
+    private function display_shortcode(array $atts, $content = null, $tag = '', $type = '') {
         $atts = shortcode_atts(array(
             'event_name' => '',
             'layout' => 'grid',
@@ -548,7 +552,7 @@ class DisplayDustData {
      * @param string $tab_context 'repeating' or 'day' for schedule tabs
      * @return void
      */
-    public static function render_data($data, $options = array(), $type = 'camps', $tab_context = 'day') {
+    public static function render_data(array $data, array $options = array(), string $type = 'camps', string $tab_context = 'day') {
         $layout = isset($options['layout']) ? $options['layout'] : 'grid';
         $show_coordinates = isset($options['show_coordinates']) && $options['show_coordinates'] === 'true';
         $show_images = isset($options['show_images']) && $options['show_images'] === 'true';
@@ -648,9 +652,13 @@ class DisplayDustData {
 
     /**
      * Render schedule with tabs
+     * 
+     * @param array $events
+     * @param array $options
+     * @param string|int|float $event_name Types taken from `esc_attr()`; expect string.
      */
-    private static function render_schedule_tabs($data, $options, $event_name) {
-        $tabs = self::organize_schedule_by_days($data);
+    private static function render_schedule_tabs(array $events, array $options, string|int|float $event_name) {
+        $tabs = self::organize_schedule_by_days($events);
         $container_id = 'dust-schedule-tabs-' . uniqid();
 
         echo '<div class="dust-schedule-tabs-container" id="' . esc_attr($container_id) . '" data-event="' . esc_attr($event_name) . '">';
@@ -707,15 +715,19 @@ class DisplayDustData {
 
     /**
      * Organize schedule data by days
+     * 
+     * @param array $events Array of events
+     * 
+     * @return array{repeating: array{label: string, events: array}, ...<string, array{label: mixed, events: array}>}
      */
-    private static function organize_schedule_by_days($data) {
+    private static function organize_schedule_by_days(array $events) {
         $tabs = array();
         $everyday_events = array();
         $day_events = array();
         $title_day_count = array();
 
         // First pass: count how many different days each event title appears on
-        foreach ($data as $event) {
+        foreach ($events as $event) {
             $title = $event['title'] ?? '';
             $day = $event['day'] ?? '';
 
@@ -728,7 +740,7 @@ class DisplayDustData {
         }
 
         // Second pass: categorize events
-        foreach ($data as $event) {
+        foreach ($events as $event) {
             $title = $event['title'] ?? '';
             $day = $event['day'] ?? '';
 
@@ -774,18 +786,18 @@ class DisplayDustData {
 
         // Process day events and create tabs
         $day_counts = array();
-        foreach ($day_events as $day => $events) {
+        foreach ($day_events as $day => $events_on_day) {
             $day_counts[$day] = ($day_counts[$day] ?? 0) + 1;
         }
 
-        foreach ($day_events as $day => $events) {
+        foreach ($day_events as $day => $events_on_day) {
             $tab_key = strtolower(str_replace(' ', '_', $day));
 
             // Add date suffix if multiple occurrences of same day
             $label = $day;
             if ($day_counts[$day] > 1) {
                 // Extract date from first event if available
-                $first_event = reset($events);
+                $first_event = reset($events_on_day);
                 if (isset($first_event['occurrence']['start_time'])) {
                     $date = new DateTime($first_event['occurrence']['start_time']);
                     $label .= ' ' . $date->format('n/j');
@@ -794,7 +806,7 @@ class DisplayDustData {
 
             $tabs[$tab_key] = array(
                 'label' => $label,
-                'events' => self::sort_schedule_events($events)
+                'events' => self::sort_schedule_events($events_on_day)
             );
         }
 
@@ -803,8 +815,12 @@ class DisplayDustData {
 
     /**
      * Sort schedule events: all-day first, then by start time, then by name
+     * 
+     * @param array $events Array of events
+     * @return array 
+     *  Array of events
      */
-    private static function sort_schedule_events($events) {
+    private static function sort_schedule_events(array $events) {
         uasort($events, function($a, $b) {
             $a_occurrence = $a['occurrence'] ?? array();
             $b_occurrence = $b['occurrence'] ?? array();
@@ -1071,7 +1087,7 @@ class DisplayDustData {
         wp_die();
     }
 
-    private function generate_csv($schedule_data) {
+    private function generate_csv(array $events) {
         $output = fopen('php://temp', 'r+');
         if (false === $output) {
             wp_die('Error creating CSV file');
@@ -1080,7 +1096,7 @@ class DisplayDustData {
         // CSV headers
         fputcsv($output, array('Title', 'Camp', 'Location', 'Day', 'Start Time', 'End Time', 'Short Time', 'Long Time', 'Brief Time', 'Image URL', 'Categories', 'Description'));
 
-        foreach ($schedule_data as $event) {
+        foreach ($events as $event) {
             $row = array(
                 $event['title'] ?? '',
                 $event['camp'] ?? '',
@@ -1127,7 +1143,7 @@ class DisplayDustData {
         wp_die();
     }
 
-    private function generate_ics($schedule_data, $event_name) {
+    private function generate_ics(array $events, ?string $event_name) {
         $timezone_info = $this->get_event_timezone($event_name);
 
         $ics = "BEGIN:VCALENDAR\r\n";
@@ -1138,7 +1154,7 @@ class DisplayDustData {
         // Add timezone definition
         $ics .= implode("\r\n", $timezone_info['vtimezone']) . "\r\n";
 
-        foreach ($schedule_data as $event) {
+        foreach ($events as $event) {
             $ics .= "BEGIN:VEVENT\r\n";
             // amazonq-ignore-next-line This fallback ID does not require secure randomness.
             $ics .= "UID:" . ($event['uid'] ?? uniqid()) . "@dust.events\r\n";
@@ -1179,11 +1195,13 @@ class DisplayDustData {
 
     /**
      * Return the event's timezone details
+     * 
+     * TODO get timezone of event by name!
      *
      * @param string|null $event_name
      * @return array
      */
-    private function get_event_timezone($event_name = null) {
+    private function get_event_timezone(?string $event_name = null) {
         $wp_timezone = wp_timezone_string();
         $timezone_id = get_option('dust_events_timezone', $wp_timezone);
 
@@ -1264,7 +1282,7 @@ class DisplayDustData {
         return sprintf('%+03d%02d', $hours, $minutes);
     }
 
-    private function parse_dust_time($event, $event_name = null) {
+    private function parse_dust_time(array $event, $event_name = null) {
         if (isset($event['occurrence']['start_time'])) {
             try {
                 $timezone_info = $this->get_event_timezone($event_name);
@@ -1277,7 +1295,7 @@ class DisplayDustData {
         return null;
     }
 
-    private function parse_dust_end_time($event, $event_name = null) {
+    private function parse_dust_end_time(array $event, ?string $event_name = null) {
         if (isset($event['occurrence']['end_time'])) {
             try {
                 $timezone_info = $this->get_event_timezone($event_name);
@@ -1290,7 +1308,7 @@ class DisplayDustData {
         return null;
     }
 
-    private function escape_ics($text) {
+    private function escape_ics(string $text) {
         return str_replace(["\n", "\r", ",", ";"], ["\\n", "", "\\,", "\\;"], strip_tags($text));
     }
 
@@ -1387,6 +1405,9 @@ class DisplayDustData {
 // Initialize the plugin
 new DisplayDustData();
 
+} // End namespace
+
+namespace {
 // Template functions for theme developers (global namespace)
 
 /**
@@ -1396,42 +1417,48 @@ new DisplayDustData();
  * @return array
  */
 function lunacode_display_dust_data_get($type, $event_name = null) {
-    return \LunaCode\DisplayDustData::get_dust_data($type, $event_name);
+    return \LunaCode\DisplayDustData\DisplayDustData::get_dust_data($type, $event_name);
 }
 
 /**
  * Output an entire list of Burn items as HTML
  *
- * @param array[] $data Array of item arrays
- * @param array $options
  * @param string $type 'camps'|'art'|'schedule'|'music'
+ * @param ?string $event_name
+ * @param array $options
+ * 
  * @return void
  */
-function lunacode_display_dust_data_render($type, $event_name = null, $options = array()) {
+function lunacode_display_dust_data_render(string $type, ?string $event_name = null, array $options = array()) {
     $data = lunacode_display_dust_data_get($type, $event_name);
     if (!is_wp_error($data) && !empty($data)) {
-        \LunaCode\DisplayDustData::render_data($data, $options, $type);
+        \LunaCode\DisplayDustData\DisplayDustData::render_data($data, $options, $type);
     }
 }
 
 /**
  * Render ICS export button
+ * 
+ * TODO give this a collision-proof name
  *
  * @param string $event_name Event name
  * @param string $text Button text
  * @return string HTML button
  */
 function dust_schedule_ics_button($event_name = '', $text = '') {
-    return \LunaCode\DisplayDustData::render_ics_button($event_name, $text);
+    return \LunaCode\DisplayDustData\DisplayDustData::render_ics_button($event_name, $text);
 }
 
 /**
  * Render CSV export button
+ *
+ * TODO give this a collision-proof name
  *
  * @param string $event_name Event name
  * @param string $text Button text
  * @return string HTML button
  */
 function dust_schedule_csv_button($event_name = '', $text = '') {
-    return \LunaCode\DisplayDustData::render_csv_button($event_name, $text);
+    return \LunaCode\DisplayDustData\DisplayDustData::render_csv_button($event_name, $text);
+}
 }
