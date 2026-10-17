@@ -1143,7 +1143,7 @@ class DisplayDustData {
         wp_die();
     }
 
-    private function generate_ics(array $events, ?string $event_name) {
+    private function generate_ics(array $events, ?string $event_name): string {
         $timezone_info = $this->get_event_timezone($event_name);
 
         $ics = "BEGIN:VCALENDAR\r\n";
@@ -1217,7 +1217,7 @@ class DisplayDustData {
      * @param string $timezone_id
      * @return array
      */
-    private function generate_vtimezone($timezone_id) {
+    private function generate_vtimezone(string $timezone_id) {
         try {
             $timezone = new DateTimeZone($timezone_id);
             $now = new DateTime('now', $timezone);
@@ -1319,7 +1319,7 @@ class DisplayDustData {
      * @param string|null $text Button text
      * @return string HTML button
      */
-    public static function render_ics_button($event_name = '', $text = '' ) {
+    public static function render_ics_button(?string $event_name = '', ?string $text = '') {
         $event_name = $event_name ?: get_option('dust_events_event_name');
         $text = $text ?: '📅 Export to Calendar';
 
@@ -1333,11 +1333,11 @@ class DisplayDustData {
     /**
      * Render CSV export button
      *
-     * @param string $event_name Event name
-     * @param string|null $text Button text
+     * @param ?string $event_name Event name
+     * @param ?string $text Button text
      * @return string HTML button
      */
-    public static function render_csv_button($event_name = '', $text = '') {
+    public static function render_csv_button(?string $event_name = '', ?string $text = '') {
         $event_name = $event_name ?: get_option('dust_events_event_name');
         $text = $text ?: '📊 Export to CSV';
 
@@ -1351,11 +1351,11 @@ class DisplayDustData {
     /**
      * Parse export buttons parameter and return HTML for requested buttons
      *
-     * @param string $show_export_buttons Parameter value
-     * @param string $event_name Event name
+     * @param string $show_export_buttons Parameter value ('true'|'all'|'false')
+     * @param ?string $event_name Event name
      * @return string HTML for export buttons
      */
-    private static function get_export_buttons($show_export_buttons, $event_name = '') {
+    private static function get_export_buttons(string $show_export_buttons, ?string $event_name = '') {
         // Handle legacy boolean values
         if ('true' === $show_export_buttons || 'all' === $show_export_buttons) {
             return self::render_ics_button($event_name) . ' ' . self::render_csv_button($event_name);
@@ -1397,7 +1397,7 @@ class DisplayDustData {
      * @param string|null $event_name
      * @return array
      */
-    public static function get_dust_data($type, $event_name = null) {
+    public static function get_dust_data(string $type, ?string $event_name = null) {
         return self::get_data($type, $event_name);
     }
 }
@@ -1416,7 +1416,7 @@ namespace {
  * @param string|null $event_name
  * @return array
  */
-function lunacode_display_dust_data_get($type, $event_name = null) {
+function lunacode_display_dust_data_get(string $type, ?string $event_name = null) {
     return \LunaCode\DisplayDustData\DisplayDustData::get_dust_data($type, $event_name);
 }
 
@@ -1445,7 +1445,7 @@ function lunacode_display_dust_data_render(string $type, ?string $event_name = n
  * @param string $text Button text
  * @return string HTML button
  */
-function dust_schedule_ics_button($event_name = '', $text = '') {
+function dust_schedule_ics_button(string $event_name = '', string$text = '') {
     return \LunaCode\DisplayDustData\DisplayDustData::render_ics_button($event_name, $text);
 }
 
@@ -1458,7 +1458,7 @@ function dust_schedule_ics_button($event_name = '', $text = '') {
  * @param string $text Button text
  * @return string HTML button
  */
-function dust_schedule_csv_button($event_name = '', $text = '') {
+function dust_schedule_csv_button(string $event_name = '', string$text = '') {
     return \LunaCode\DisplayDustData\DisplayDustData::render_csv_button($event_name, $text);
 }
 }
