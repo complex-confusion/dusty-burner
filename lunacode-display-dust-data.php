@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * LunaCode Display Dust Data
  *
@@ -25,7 +26,6 @@
  * Text Domain:       lunacode-display-dust-data
  */
 
-declare(strict_types=1);
 
 namespace LunaCode\DisplayDustData {
 

@@ -12,5 +12,7 @@
             "name": "Michael Greisman"
         }
     ],
-    "require": {}
+    "require-dev": {
+        "phpstan/phpstan": "^2.3"
+    }
 }
