@@ -54,6 +54,26 @@ if (!defined('ABSPATH')) {
     wp_die('Direct access is not allowed. Return through the website; stop with the hackery.');
 }
 
+/**
+ * @phpstan-type EventShape array{
+ *     title: string,
+ *     camp?: string,
+ *     location?: string,
+ *     day?: string,
+ *     occurrence: array{
+ *         start_time: string,
+ *         end_time?: string,
+ *         short?: string,
+ *         long?: string,
+ *         brief?: string,
+ *     },
+ *     imageUrl?: string,
+ *     event_type: array{
+ *         label: string,
+ *     },
+ *     description?: string,
+ * }
+ */
 class DisplayDustData {
     const PLUGIN_VERSION = '0.5.1';
     const IMAGE_BASE_URL = 'https://data.dust.events/';
@@ -653,7 +673,7 @@ class DisplayDustData {
     /**
      * Render schedule with tabs
      * 
-     * @param array $events
+     * @param list<EventShape> $events
      * @param array $options
      * @param string|int|float $event_name Types taken from `esc_attr()`; expect string.
      */
@@ -716,7 +736,7 @@ class DisplayDustData {
     /**
      * Organize schedule data by days
      * 
-     * @param array $events Array of events
+     * @param list<EventShape> $events Array of events
      * 
      * @return array{repeating: array{label: string, events: array}, ...<string, array{label: string, events: array}>}
      */
@@ -816,7 +836,7 @@ class DisplayDustData {
     /**
      * Sort schedule events: all-day first, then by start time, then by name
      * 
-     * @param array $events Array of events
+     * @param list<EventShape> $events Array of events
      * @return array 
      *  Array of events
      */
@@ -895,6 +915,7 @@ class DisplayDustData {
 
         error_log("DUST DEBUG: Filtering data - Start: {$start_date}, End: {$end_date}, Timezone: {$timezone_id}");
 
+        // TODO for readability, refactor anonymous function into a separate variable
         return array_filter($data, function($item) use ($start_date, $end_date, $timezone_id) {
             if (!isset($item['occurrence']['start_time'])) {
                 return true;
@@ -1087,6 +1108,10 @@ class DisplayDustData {
         wp_die();
     }
 
+    /**
+     * @param list<EventShape> $events
+     * @return string CSV
+     */
     private function generate_csv(array $events): string {
         $output = fopen('php://temp', 'r+');
         if (false === $output) {
@@ -1143,6 +1168,11 @@ class DisplayDustData {
         wp_die();
     }
 
+    /**
+     * @param list<EventShape> $events
+     * @param ?string $event_name
+     * @return string ICS calendar info
+     */
     private function generate_ics(array $events, ?string $event_name): string {
         $timezone_info = $this->get_event_timezone($event_name);
 
