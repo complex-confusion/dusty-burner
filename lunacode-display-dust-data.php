@@ -238,7 +238,7 @@ class DisplayDustData {
      * @param string|null $event_name
      * @return array|\WP_Error
      */
-    public static function get_data($type, $event_name = null) {
+    public static function get_data($type, $event_name = null): array|\WP_Error {
         // Validate type parameter
         $allowed_types = array('camps', 'art', 'schedule', 'music');
         if (!in_array($type, $allowed_types, true)) {
@@ -718,7 +718,7 @@ class DisplayDustData {
      * 
      * @param array $events Array of events
      * 
-     * @return array{repeating: array{label: string, events: array}, ...<string, array{label: mixed, events: array}>}
+     * @return array{repeating: array{label: string, events: array}, ...<string, array{label: string, events: array}>}
      */
     private static function organize_schedule_by_days(array $events) {
         $tabs = array();
@@ -1087,7 +1087,7 @@ class DisplayDustData {
         wp_die();
     }
 
-    private function generate_csv(array $events) {
+    private function generate_csv(array $events): string {
         $output = fopen('php://temp', 'r+');
         if (false === $output) {
             wp_die('Error creating CSV file');
@@ -1201,7 +1201,7 @@ class DisplayDustData {
      * @param string|null $event_name
      * @return array
      */
-    private function get_event_timezone(?string $event_name = null) {
+    private function get_event_timezone(?string $event_name = null): array {
         $wp_timezone = wp_timezone_string();
         $timezone_id = get_option('dust_events_timezone', $wp_timezone);
 
@@ -1282,7 +1282,7 @@ class DisplayDustData {
         return sprintf('%+03d%02d', $hours, $minutes);
     }
 
-    private function parse_dust_time(array $event, $event_name = null) {
+    private function parse_dust_time(array $event, $event_name = null): ?string {
         if (isset($event['occurrence']['start_time'])) {
             try {
                 $timezone_info = $this->get_event_timezone($event_name);
@@ -1295,7 +1295,7 @@ class DisplayDustData {
         return null;
     }
 
-    private function parse_dust_end_time(array $event, ?string $event_name = null) {
+    private function parse_dust_end_time(array $event, ?string $event_name = null): ?string {
         if (isset($event['occurrence']['end_time'])) {
             try {
                 $timezone_info = $this->get_event_timezone($event_name);
@@ -1308,7 +1308,7 @@ class DisplayDustData {
         return null;
     }
 
-    private function escape_ics(string $text) {
+    private function escape_ics(string $text): string {
         return str_replace(["\n", "\r", ",", ";"], ["\\n", "", "\\,", "\\;"], strip_tags($text));
     }
 
@@ -1319,7 +1319,7 @@ class DisplayDustData {
      * @param string|null $text Button text
      * @return string HTML button
      */
-    public static function render_ics_button(?string $event_name = '', ?string $text = '') {
+    public static function render_ics_button(?string $event_name = '', ?string $text = ''): string {
         $event_name = $event_name ?: get_option('dust_events_event_name');
         $text = $text ?: '📅 Export to Calendar';
 
@@ -1337,7 +1337,7 @@ class DisplayDustData {
      * @param ?string $text Button text
      * @return string HTML button
      */
-    public static function render_csv_button(?string $event_name = '', ?string $text = '') {
+    public static function render_csv_button(?string $event_name = '', ?string $text = ''): string {
         $event_name = $event_name ?: get_option('dust_events_event_name');
         $text = $text ?: '📊 Export to CSV';
 
@@ -1355,7 +1355,7 @@ class DisplayDustData {
      * @param ?string $event_name Event name
      * @return string HTML for export buttons
      */
-    private static function get_export_buttons(string $show_export_buttons, ?string $event_name = '') {
+    private static function get_export_buttons(string $show_export_buttons, ?string $event_name = ''): string {
         // Handle legacy boolean values
         if ('true' === $show_export_buttons || 'all' === $show_export_buttons) {
             return self::render_ics_button($event_name) . ' ' . self::render_csv_button($event_name);
@@ -1397,7 +1397,7 @@ class DisplayDustData {
      * @param string|null $event_name
      * @return array
      */
-    public static function get_dust_data(string $type, ?string $event_name = null) {
+    public static function get_dust_data(string $type, ?string $event_name = null): array|\WP_Error {
         return self::get_data($type, $event_name);
     }
 }
@@ -1416,7 +1416,7 @@ namespace {
  * @param string|null $event_name
  * @return array
  */
-function lunacode_display_dust_data_get(string $type, ?string $event_name = null) {
+function lunacode_display_dust_data_get(string $type, ?string $event_name = null): array|\WP_Error {
     return \LunaCode\DisplayDustData\DisplayDustData::get_dust_data($type, $event_name);
 }
 
@@ -1429,7 +1429,7 @@ function lunacode_display_dust_data_get(string $type, ?string $event_name = null
  * 
  * @return void
  */
-function lunacode_display_dust_data_render(string $type, ?string $event_name = null, array $options = array()) {
+function lunacode_display_dust_data_render(string $type, ?string $event_name = null, array $options = array()): void {
     $data = lunacode_display_dust_data_get($type, $event_name);
     if (!is_wp_error($data) && !empty($data)) {
         \LunaCode\DisplayDustData\DisplayDustData::render_data($data, $options, $type);
@@ -1445,7 +1445,7 @@ function lunacode_display_dust_data_render(string $type, ?string $event_name = n
  * @param string $text Button text
  * @return string HTML button
  */
-function dust_schedule_ics_button(string $event_name = '', string$text = '') {
+function dust_schedule_ics_button(string $event_name = '', string$text = ''): string {
     return \LunaCode\DisplayDustData\DisplayDustData::render_ics_button($event_name, $text);
 }
 
