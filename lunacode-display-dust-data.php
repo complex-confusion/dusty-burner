@@ -35,7 +35,7 @@ require __DIR__ ."/vendor/autoload.php";
 use function add_action, add_options_page, add_settings_field, add_settings_section, add_shortcode, admin_url,
     check_ajax_referer, current_user_can, do_settings_sections, esc_attr, esc_html, esc_url, get_option, get_transient,
     is_admin, is_wp_error, plugin_dir_url, register_post_type, register_setting, sanitize_text_field, set_transient,
-    settings_fields, shortcode_atts, submit_button, wp_create_nonce, wp_die, wp_enqueue_script, wp_enqueue_style,
+    settings_fields, shortcode_atts, submit_button, wp_create_nonce, wp_die, wp_doing_ajax, wp_enqueue_script, wp_enqueue_style,
     wp_kses_post, wp_localize_script, wp_remote_get, wp_remote_retrieve_body, wp_remote_retrieve_response_code,
     wp_send_json_error, wp_send_json_success;
 
@@ -47,7 +47,7 @@ use function array_keys, array_slice, defined, explode, header, implode, in_arra
 use WP_Error, DateTime, DateInterval, DateTimeZone;
 
 // Constants
-use const ABSPATH, DOING_AJAX, HOUR_IN_SECONDS, JSON_ERROR_NONE;
+use const HOUR_IN_SECONDS, JSON_ERROR_NONE;
 
 // Prevent direct access
 if (!defined('ABSPATH')) {
@@ -83,9 +83,9 @@ class DisplayDustData {
         add_action('wp_ajax_nopriv_export_schedule_csv', array($this, 'export_schedule_csv'));
     }
 
-    public function init() {
+    public function init(): void {
         // Register custom post types for caching only if needed
-        if (is_admin() || (defined('DOING_AJAX') && DOING_AJAX)) {
+        if (is_admin() || wp_doing_ajax()) {
             $types = array('camp', 'art', 'schedule', 'music');
             foreach ($types as $type) {
                 register_post_type('dust_' . $type, array(
@@ -101,7 +101,7 @@ class DisplayDustData {
         }
     }
 
-    public function enqueue_scripts() {
+    public function enqueue_scripts(): void {
         wp_enqueue_script('jquery');
         wp_enqueue_script('dust-events-js', plugin_dir_url(__FILE__) . 'lunacode-display-dust-data.js', array('jquery'), self::PLUGIN_VERSION, true);
         wp_enqueue_script('dust-ics-export', plugin_dir_url(__FILE__) . 'schedule-ics-button.js', array('jquery'), self::PLUGIN_VERSION, true);
@@ -113,7 +113,7 @@ class DisplayDustData {
         ));
     }
 
-    public function add_admin_menu() {
+    public function add_admin_menu(): void {
         add_options_page(
             'LunaCode Display Dust Data Settings',
             'LunaCode Display Dust Data',
@@ -123,7 +123,7 @@ class DisplayDustData {
         );
     }
 
-    public function settings_init() {
+    public function settings_init(): void {
         register_setting('dust_events', 'dust_events_event_name');
         register_setting('dust_events', 'dust_events_start_date');
         register_setting('dust_events', 'dust_events_end_date');
@@ -176,33 +176,33 @@ class DisplayDustData {
         );
     }
 
-    public function settings_api_section_callback() {
+    public function settings_api_section_callback(): void {
         echo 'This info is used to communicate with the Dust APIs, and is not displayed by the plugin.';
     }
 
-    public function settings_events_section_callback() {
+    public function settings_events_section_callback(): void {
         echo 'These settings help display and limit date-based events:';
     }
 
-    public function event_name_render() {
+    public function event_name_render(): void {
         $event_name = get_option('dust_events_event_name');
         echo '<input type="text" name="dust_events_event_name" value="' . esc_attr($event_name) . '" />';
         echo '<p class="description">This is the computer-friendly form of the name you used to register your regional burn within Dust.<br>For example, Playa Del Fuego\'s is "playa-del-fuego".</p>';
     }
 
-    public function start_date_render() {
+    public function start_date_render(): void {
         $start_date = get_option('dust_events_start_date');
         echo '<input type="date" name="dust_events_start_date" value="' . esc_attr($start_date) . '" />';
         echo '<p class="description">The first day of your regional burn.</p>';
     }
 
-    public function end_date_render() {
+    public function end_date_render(): void {
         $end_date = get_option('dust_events_end_date');
         echo '<input type="date" name="dust_events_end_date" value="' . esc_attr($end_date) . '" />';
         echo '<p class="description">The last day of your regional burn.</p>';
     }
 
-    public function timezone_render() {
+    public function timezone_render(): void {
         $wp_timezone = wp_timezone_string();
         $selected_timezone = get_option('dust_events_timezone', $wp_timezone);
         echo '<select name="dust_events_timezone">';
@@ -212,7 +212,7 @@ class DisplayDustData {
         echo '<p class="description">Timezone containing your regional burn. Used for calendar exports.</p>';
     }
 
-    public function options_page() {
+    public function options_page(): void {
         if (!current_user_can('manage_options')) {
             return;
         }
