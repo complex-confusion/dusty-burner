@@ -1108,7 +1108,7 @@ class DisplayDustData {
             wp_die('Error loading schedule data');
         }
 
-        $csv_content = $this->generate_csv($data);
+        $csv_content = $this->generate_schedule_csv($data);
 
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename="' . esc_attr($event_name) . '-schedule.csv"');
@@ -1120,7 +1120,7 @@ class DisplayDustData {
      * @param list<EventShape> $events
      * @return string CSV
      */
-    private function generate_csv(array $events): string {
+    private function generate_schedule_csv(array $events): string {
         $output = fopen('php://temp', 'r+');
         if (false === $output) {
             wp_die('Error creating CSV file');
@@ -1167,7 +1167,7 @@ class DisplayDustData {
             wp_die('Error loading schedule data');
         }
 
-        $ics_content = $this->generate_ics($data, $event_name);
+        $ics_content = $this->generate_schedule_ics($data, $event_name);
 
         header('Content-Type: text/calendar; charset=utf-8');
         $safe_filename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $event_name);
@@ -1181,7 +1181,7 @@ class DisplayDustData {
      * @param ?string $event_name
      * @return string ICS calendar info
      */
-    private function generate_ics(array $events, ?string $event_name): string {
+    private function generate_schedule_ics(array $events, ?string $event_name): string {
         $timezone_info = $this->get_event_timezone($event_name);
 
         $ics = "BEGIN:VCALENDAR\r\n";
