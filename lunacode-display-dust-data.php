@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 /**
  * LunaCode Display Dust Data
  *
@@ -10,8 +9,8 @@ declare(strict_types=1);
  * @wordpress-plugin
  * Plugin Name:       LunaCode Display Dust Data
  * Description:       Display camps, art, schedule, and music served by the Dust API with customizable shortcodes and layouts.
- * Version:           0.5.1
- * @version           0.5.1
+ * Version:           0.5.2
+ * @version           0.5.2
  * Requires at least: 4.6
  * Requires PHP:      7.0
  * Author:            Complex Confusion
@@ -26,10 +25,19 @@ declare(strict_types=1);
  * Text Domain:       lunacode-display-dust-data
  */
 
+declare(strict_types=1);
 
-namespace LunaCode\DisplayDustData {
+namespace LunaCode\DisplayDustData;
 
-require __DIR__ ."/vendor/autoload.php";
+// Prevent direct access
+if (!defined('ABSPATH')) {
+    wp_die('Direct access is not allowed. Return through the website; stop with the hackery.');
+}
+
+if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+    require_once __DIR__ . '/vendor/autoload.php';
+}
+
 
 // WordPress functions
 use function add_action, add_options_page, add_settings_field, add_settings_section, add_shortcode, admin_url,
@@ -1435,10 +1443,7 @@ class DisplayDustData {
 // Initialize the plugin
 new DisplayDustData();
 
-} // End namespace
-
-namespace {
-// Template functions for theme developers (global namespace)
+// Template functions for theme developers:
 
 /**
  * For a theme: Get array of Burn items - camps, art, events, or music
@@ -1490,5 +1495,4 @@ function dust_schedule_ics_button(string $event_name = '', string$text = ''): st
  */
 function dust_schedule_csv_button(string $event_name = '', string$text = '') {
     return \LunaCode\DisplayDustData\DisplayDustData::render_csv_button($event_name, $text);
-}
 }
