@@ -25,53 +25,39 @@ class CsvGenerator {
      * @return string CSV
      */
     public function generate_csv(array $list, string $export_type = 'schedule'): string {
-        $csv = match ($export_type) {
-            // TODO in future, enable other export types of Dust content.
-            'schedule' => $this->generate_schedule_csv($list),
-            // 'schedule', 'camps', 'art', 'music' => $this->{"export_{$export_type}_csv"}($event_name, $list),
-            default => throw new InvalidArgumentException("Unsupported export type: {$export_type}"),
-        };
-        return $csv;
-    }
-
-    /**
-     * generate_schedule_csv
-     * Turn JSON schedule (list of the Burn's events) into CSV.
-     * 
-     * @param list<LunaCode\DisplayDustData\DisplayDustData::EventShape> $event_list
-     * @return string CSV
-     */
-    private function generate_schedule_csv(array $event_list): string {
+        $mapper = $this->get_mapper($export_type);
         $output = fopen('php://temp', 'r+');
         if (false === $output) {
             throw new RuntimeException('Error creating CSV file');
         }
 
-        // CSV headers
-        fputcsv($output, array('Title', 'Camp', 'Location', 'Day', 'Start Time', 'End Time', 'Short Time', 'Long Time', 'Brief Time', 'Image URL', 'Categories', 'Description'));
+        // Write headers via mapper
+        fputcsv($output, $mapper->get_headers());
 
-        foreach ($event_list as $event) {
-            $row = array(
-                $event['title'] ?? '',
-                $event['camp'] ?? '',
-                $event['location'] ?? '',
-                $event['day'] ?? '',
-                $event['occurrence']['start_time'] ?? '',
-                $event['occurrence']['end_time'] ?? '',
-                $event['occurrence']['short'] ?? '',
-                $event['occurrence']['long'] ?? '',
-                $event['occurrence']['brief'] ?? '',
-                ($this->image_url_getter)($event['imageUrl']) ?? '',
-                $event['event_type']['label'] ?? '',
-                strip_tags($event['description'] ?? '')
-            );
-            fputcsv($output, $row);
+        // Write rows via mapper
+        foreach ($list as $item) {
+            fputcsv($output, $mapper->map($item));
         }
-
         rewind($output);
         $csv_content = stream_get_contents($output);
         fclose($output);
 
         return $csv_content;
+    }
+
+    /**
+     * Factory method to get the appropriate mapper based on export type.
+     *
+     * @param string $type
+     * @return CsvMapperInterface
+     * @throws InvalidArgumentException
+     */
+    private function get_mapper(string $type): CsvMapperInterface {
+        return match ($type) {
+            'schedule' => new ScheduleMapper($this->image_url_getter),
+            // Future mappers can be added here:
+            // 'camps' => new CampMapper(),
+            default    => throw new InvalidArgumentException("Unsupported export type: {$type}"),
+        };
     }
 }
