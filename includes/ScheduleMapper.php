@@ -5,6 +5,9 @@ namespace LunaCode\DisplayDustData;
 
 use Closure;
 
+/**
+ * @phpstan-import-type EventShape from Types
+ */
 class ScheduleMapper implements CsvMapperInterface {
     private Closure $image_url_getter;
 
@@ -33,7 +36,7 @@ class ScheduleMapper implements CsvMapperInterface {
     }
 
     /**
-     * @param mixed $event
+     * @param EventShape $event
      * @return string[]
      */
     public function map(mixed $event): array {
