@@ -409,7 +409,7 @@ class DisplayDustData {
      * @param string $image_path Relative path or complete URL
      * @return string|null Complete image URL or null if empty
      */
-    private static function get_image_url($image_path) {
+    public static function get_image_url($image_path) {
         if (empty($image_path)) {
             return null;
         }
@@ -1118,60 +1118,28 @@ class DisplayDustData {
     /**
      * Export schedule as CSV file
      */
-    public function export_schedule_csv() {
+    public function export_schedule_csv(): void {
         check_ajax_referer('dust_events_nonce', 'nonce');
 
         $event_name = sanitize_text_field($_POST['event_name'] ?? get_option('dust_events_event_name'));
-        $data = self::get_data('schedule', $event_name);
+        $event_list = self::get_data('schedule', $event_name);
 
-        if (is_wp_error($data)) {
+        if (is_wp_error($event_list)) {
             wp_die('Error loading schedule data');
         }
 
-        $csv_content = $this->generate_schedule_csv($data);
+        try {
+            $csv_generator = new CsvGenerator();
+            $csv_content = $csv_generator->generate_csv($event_list, 'schedule');
 
-        header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename="' . esc_attr($event_name) . '-schedule.csv"');
-        echo $csv_content;
+            header('Content-Type: text/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename="' . esc_attr($event_name) . '-schedule.csv"');
+            echo $csv_content;
+        } catch (\Exception $e) {
+            wp_die($e->getMessage());
+        }
+
         wp_die();
-    }
-
-    /**
-     * @param list<EventShape> $events
-     * @return string CSV
-     */
-    private function generate_schedule_csv(array $events): string {
-        $output = fopen('php://temp', 'r+');
-        if (false === $output) {
-            wp_die('Error creating CSV file');
-        }
-
-        // CSV headers
-        fputcsv($output, array('Title', 'Camp', 'Location', 'Day', 'Start Time', 'End Time', 'Short Time', 'Long Time', 'Brief Time', 'Image URL', 'Categories', 'Description'));
-
-        foreach ($events as $event) {
-            $row = array(
-                $event['title'] ?? '',
-                $event['camp'] ?? '',
-                $event['location'] ?? '',
-                $event['day'] ?? '',
-                isset($event['occurrence']['start_time']) ? $event['occurrence']['start_time'] : '',
-                isset($event['occurrence']['end_time']) ? $event['occurrence']['end_time'] : '',
-                isset($event['occurrence']['short']) ? $event['occurrence']['short'] : '',
-                isset($event['occurrence']['long']) ? $event['occurrence']['long'] : '',
-                isset($event['occurrence']['brief']) ? $event['occurrence']['brief'] : '',
-                isset($event['imageUrl']) ? self::get_image_url($event['imageUrl']) : '',
-                isset($event['event_type']['label']) ? $event['event_type']['label'] : '',
-                strip_tags($event['description'] ?? '')
-            );
-            fputcsv($output, $row);
-        }
-
-        rewind($output);
-        $csv_content = stream_get_contents($output);
-        fclose($output);
-
-        return $csv_content;
     }
 
     /**
