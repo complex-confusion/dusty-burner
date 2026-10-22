@@ -138,7 +138,7 @@ class DisplayDustData {
     }
 
     public function settings_init(): void {
-        register_setting('dust_events', 'dust_events_event_name');
+        register_setting('dust_events', 'dust_events_burn_id');
         register_setting('dust_events', 'dust_events_start_date');
         register_setting('dust_events', 'dust_events_end_date');
         register_setting('dust_events', 'dust_events_timezone');
@@ -151,8 +151,8 @@ class DisplayDustData {
         );
 
         add_settings_field(
-            'dust_events_event_name',
-            'Event Name (your-unique-name)',
+            'dust_events_burn_id',
+            'Burn\'s Unique Name in Dust (your-unique-name)',
             array($this, 'event_name_render'),
             'dust_events',
             'dust_api_section'
@@ -199,8 +199,8 @@ class DisplayDustData {
     }
 
     public function event_name_render(): void {
-        $event_name = get_option('dust_events_event_name');
-        echo '<input type="text" name="dust_events_event_name" value="' . esc_attr($event_name) . '" />';
+        $burn_id = get_option('dust_events_burn_id');
+        echo '<input type="text" name="dust_events_burn_id" value="' . esc_attr($burn_id) . '" />';
         echo '<p class="description">This is the computer-friendly form of the name you used to register your regional burn within Dust.<br>For example, Playa Del Fuego\'s is "playa-del-fuego".</p>';
     }
 
@@ -249,28 +249,28 @@ class DisplayDustData {
      * @security-ignore CWE-285: No authentication required for public API endpoints
      *
      * @param string $type 'camps'|'art'|'schedule'|'music'
-     * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
+     * @param string|null $burn_id The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
      * @return array|\WP_Error
      */
-    public static function get_data($type, $event_name = null): array|\WP_Error {
+    public static function get_data($type, $burn_id = null): array|\WP_Error {
         // Validate type parameter
         $allowed_types = array('camps', 'art', 'schedule', 'music');
         if (!in_array($type, $allowed_types, true)) {
             return new WP_Error('invalid_type', 'Invalid API endpoint specified');
         }
 
-        if (!$event_name) {
-            $event_name = get_option('dust_events_event_name');
+        if (!$burn_id) {
+            $burn_id = get_option('dust_events_burn_id');
         }
 
-        if (!$event_name) {
+        if (!$burn_id) {
             return new WP_Error('no_event_name', 'No event name configured');
         }
 
-        $api_url = self::API_BASE_URL . $event_name . '/' . $type . '.json';
+        $api_url = self::API_BASE_URL . $burn_id . '/' . $type . '.json';
 
         // Check for cached data (cache for 1 hour)
-        $cache_key = 'dust_' . $type . '_' . md5($event_name);
+        $cache_key = 'dust_' . $type . '_' . md5($burn_id);
         $cached_data = get_transient($cache_key);
 
         if (false !== $cached_data) {
@@ -519,13 +519,13 @@ class DisplayDustData {
             $atts['show_export_buttons'] = 'true';
         }
 
-        $event_name = !empty($atts['event_name']) ? $atts['event_name'] : get_option('dust_events_event_name');
+        $burn_id = !empty($atts['event_name']) ? $atts['event_name'] : get_option('dust_events_burn_id');
 
-        if (empty($event_name)) {
+        if (empty($burn_id)) {
             return '<p>Please configure the event name in the plugin settings.</p>';
         }
 
-        $data = self::get_data($type, $event_name);
+        $data = self::get_data($type, $burn_id);
 
         if (is_wp_error($data)) {
             return '<p>Error loading ' . $type . ' data: ' . esc_html($data->get_error_message()) . '</p>';
@@ -543,11 +543,11 @@ class DisplayDustData {
         ob_start();
 
         if ('schedule' === $type && 'tabs' === $atts['display']) {
-            self::render_schedule_tabs($data, $atts, $event_name);
+            self::render_schedule_tabs($data, $atts, $burn_id);
         } else {
             // Show export buttons for schedule if requested
             if ('schedule' === $type) {
-                $export_buttons = self::get_export_buttons($atts['show_export_buttons'], $event_name);
+                $export_buttons = self::get_export_buttons($atts['show_export_buttons'], $burn_id);
                 if (!empty($export_buttons)) {
                     echo '<div class="lunacode-export-buttons">' . $export_buttons . '</div>';
                 }
@@ -669,17 +669,17 @@ class DisplayDustData {
      * 
      * @param list<EventShape> $events
      * @param array $options
-     * @param string|int|float $event_name Types taken from `esc_attr()`; expect string.
+     * @param string|null $burn_id The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
      */
-    private static function render_schedule_tabs(array $events, array $options, string|int|float $event_name) {
+    private static function render_schedule_tabs(array $events, array $options, string|int|float $burn_id) {
         $tabs = self::organize_schedule_by_days($events);
         $container_id = 'dust-schedule-tabs-' . uniqid();
 
-        echo '<div class="dust-schedule-tabs-container" id="' . esc_attr($container_id) . '" data-event="' . esc_attr($event_name) . '">';
+        echo '<div class="dust-schedule-tabs-container" id="' . esc_attr($container_id) . '" data-event="' . esc_attr($burn_id) . '">';
 
         // Export buttons if requested
         if (isset($options['show_export_buttons'])) {
-            $export_buttons = self::get_export_buttons($options['show_export_buttons'], $event_name);
+            $export_buttons = self::get_export_buttons($options['show_export_buttons'], $burn_id);
             if (!empty($export_buttons)) {
                 echo '<div class="lunacode-export-buttons">' . $export_buttons . '</div>';
             }
@@ -1087,8 +1087,8 @@ class DisplayDustData {
     public function export_schedule_csv(): void {
         check_ajax_referer('dust_events_nonce', 'nonce');
 
-        $event_name = sanitize_text_field($_POST['event_name'] ?? get_option('dust_events_event_name'));
-        $event_list = self::get_data('schedule', $event_name);
+        $burn_id = sanitize_text_field($_POST['event_name'] ?? get_option('dust_events_burn_id'));
+        $event_list = self::get_data('schedule', $burn_id);
 
         if (is_wp_error($event_list)) {
             wp_die('Error loading schedule data');
@@ -1099,7 +1099,7 @@ class DisplayDustData {
             $csv_content = $csv_generator->generate_csv($event_list, 'schedule');
 
             header('Content-Type: text/csv; charset=utf-8');
-            header('Content-Disposition: attachment; filename="' . esc_attr($event_name) . '-schedule.csv"');
+            header('Content-Disposition: attachment; filename="' . esc_attr($burn_id) . '-schedule.csv"');
             echo $csv_content;
         } catch (\Exception $e) {
             wp_die($e->getMessage());
@@ -1114,17 +1114,17 @@ class DisplayDustData {
     public function export_schedule_ics() {
         check_ajax_referer('dust_events_nonce', 'nonce');
 
-        $event_name = sanitize_text_field($_POST['event_name'] ?? get_option('dust_events_event_name'));
-        $data = self::get_data('schedule', $event_name);
+        $burn_id = sanitize_text_field($_POST['event_name'] ?? get_option('dust_events_burn_id'));
+        $data = self::get_data('schedule', $burn_id);
 
         if (is_wp_error($data)) {
             wp_die('Error loading schedule data');
         }
 
-        $ics_content = $this->generate_schedule_ics($data, $event_name);
+        $ics_content = $this->generate_schedule_ics($data, $burn_id);
 
         header('Content-Type: text/calendar; charset=utf-8');
-        $safe_filename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $event_name);
+        $safe_filename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $burn_id);
         header('Content-Disposition: attachment; filename="' . $safe_filename . '-schedule.ics"');
         echo $ics_content;
         wp_die();
@@ -1132,11 +1132,11 @@ class DisplayDustData {
 
     /**
      * @param list<EventShape> $events
-     * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
+     * @param string|null $burn_id The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
      * @return string ICS calendar info
      */
-    private function generate_schedule_ics(array $events, ?string $event_name): string {
-        $timezone_info = $this->get_event_timezone($event_name);
+    private function generate_schedule_ics(array $events, ?string $burn_id): string {
+        $timezone_info = $this->get_event_timezone($burn_id);
 
         $ics = "BEGIN:VCALENDAR\r\n";
         $ics .= "VERSION:2.0\r\n";
@@ -1161,8 +1161,8 @@ class DisplayDustData {
             }
 
             // Handle time format from Dust API
-            $start_time = $this->parse_dust_time($event['occurrence']['start_time'], $event_name);
-            $end_time = $this->parse_dust_time($event['occurrence']['end_time'], $event_name);
+            $start_time = $this->parse_dust_time($event['occurrence']['start_time'], $burn_id);
+            $end_time = $this->parse_dust_time($event['occurrence']['end_time'], $burn_id);
 
             if ($start_time) {
                 $ics .= "DTSTART;TZID=" . $timezone_info['id'] . ":" . $start_time . "\r\n";
@@ -1191,10 +1191,10 @@ class DisplayDustData {
      * 
      * @todo get timezone of event by name!
      *
-     * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
+     * @param string|null $burn_id The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
      * @return array{id: string, vtimezone: string[]} The timezone ID and an array of ICS lines
      */
-    private function get_event_timezone(?string $event_name = null): array {
+    private function get_event_timezone(?string $burn_id = null): array {
         $wp_timezone = wp_timezone_string();
         $timezone_id = get_option('dust_events_timezone', $wp_timezone);
 
@@ -1284,13 +1284,13 @@ class DisplayDustData {
      * @todo separate ICS generation to separate service. Better yet, consider using *spatie/calendar-generator*.
      * 
      * @param string $timestamp The date and time provided by the API.
-     * @param string|null $event_name Optional, for timezone resolution. The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
+     * @param string|null $burn_id Optional, for timezone resolution. The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
      * @return string|null The ISO 8601 formatted date string, or null if parsing fails.
      */
-    private function parse_dust_time(string $timestamp, $event_name = null): ?string {
+    private function parse_dust_time(string $timestamp, $burn_id = null): ?string {
         if (isset($event['occurrence']['start_time'])) {
             try {
-                $timezone_info = $this->get_event_timezone($event_name);
+                $timezone_info = $this->get_event_timezone($burn_id);
                 $dt = new DateTime($timestamp, new DateTimeZone($timezone_info['id']));
                 return $dt->format('Ymd\THis');
             } catch (\Exception $e) {
@@ -1308,16 +1308,16 @@ class DisplayDustData {
     /**
      * Render ICS export button
      *
-     * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
+     * @param string|null $burn_id The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
      * @param string|null $text Button text
      * @return string HTML button
      */
-    public static function render_ics_button(?string $event_name = '', ?string $text = ''): string {
-        $event_name = $event_name ?: get_option('dust_events_event_name');
+    public static function render_ics_button(?string $burn_id = '', ?string $text = ''): string {
+        $burn_id = $burn_id ?: get_option('dust_events_burn_id');
         $text = $text ?: '📅 Export to Calendar';
 
         $escaped = array(
-            'event_name' => esc_attr($event_name),
+            'event_name' => esc_attr($burn_id),
             'text' => esc_html($text),
         );
         return "<button class=\"dust-ics-export-btn\" data-event=\"{$escaped['event_name']}\" aria-label=\"Export schedule to calendar file\" type=\"button\">{$escaped['text']}</button>";
@@ -1326,16 +1326,16 @@ class DisplayDustData {
     /**
      * Render CSV export button
      *
-     * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
+     * @param string|null $burn_id The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
      * @param string|null $text Button text
      * @return string HTML button
      */
-    public static function render_csv_button(?string $event_name = '', ?string $text = ''): string {
-        $event_name = $event_name ?: get_option('dust_events_event_name');
+    public static function render_csv_button(?string $burn_id = '', ?string $text = ''): string {
+        $burn_id = $burn_id ?: get_option('dust_events_burn_id');
         $text = $text ?: '📊 Export to CSV';
 
         $escaped = array(
-            'event_name' => esc_attr($event_name),
+            'event_name' => esc_attr($burn_id),
             'text' => esc_html($text),
         );
         return "<button class=\"dust-csv-export-btn\" data-event=\"{$escaped['event_name']}\" aria-label=\"Export schedule to CSV file\" type=\"button\">{$escaped['text']}</button>";
@@ -1345,13 +1345,13 @@ class DisplayDustData {
      * Parse export buttons parameter and return HTML for requested buttons
      *
      * @param string $show_export_buttons Parameter value ('true'|'all'|'false')
-     * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
+     * @param string|null $burn_id The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
      * @return string HTML for export buttons
      */
-    private static function get_export_buttons(string $show_export_buttons, ?string $event_name = ''): string {
+    private static function get_export_buttons(string $show_export_buttons, ?string $burn_id = ''): string {
         // Handle legacy boolean values
         if ('true' === $show_export_buttons || 'all' === $show_export_buttons) {
-            return self::render_ics_button($event_name) . ' ' . self::render_csv_button($event_name);
+            return self::render_ics_button($burn_id) . ' ' . self::render_csv_button($burn_id);
         }
 
         if ('false' === $show_export_buttons || 'none' === $show_export_buttons || empty($show_export_buttons)) {
@@ -1370,13 +1370,13 @@ class DisplayDustData {
         foreach ($requested as $type) {
             switch ($type) {
                 case 'ics':
-                    $buttons[] = self::render_ics_button($event_name);
+                    $buttons[] = self::render_ics_button($burn_id);
                     break;
                 case 'csv':
-                    $buttons[] = self::render_csv_button($event_name);
+                    $buttons[] = self::render_csv_button($burn_id);
                     break;
                 case 'all':
-                    return self::render_ics_button($event_name) . ' ' . self::render_csv_button($event_name);
+                    return self::render_ics_button($burn_id) . ' ' . self::render_csv_button($burn_id);
             }
         }
 
@@ -1387,11 +1387,11 @@ class DisplayDustData {
      * Get data for use in themes/other plugins
      *
      * @param string $type 'camps'|'art'|'schedule'|'music'
-     * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
+     * @param string|null $burn_id The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
      * @return array
      */
-    public static function get_dust_data(string $type, ?string $event_name = null): array|\WP_Error {
-        return self::get_data($type, $event_name);
+    public static function get_dust_data(string $type, ?string $burn_id = null): array|\WP_Error {
+        return self::get_data($type, $burn_id);
     }
 }
 
@@ -1403,24 +1403,24 @@ new DisplayDustData();
 /**
  * For a theme: Get array of Burn items - camps, art, events, or music
  * @param string $type 'camps'|'art'|'schedule'|'music'
- * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
+ * @param string|null $burn_id The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
  * @return array
  */
-function lunacode_display_dust_data_get(string $type, ?string $event_name = null): array|\WP_Error {
-    return \LunaCode\DisplayDustData\DisplayDustData::get_dust_data($type, $event_name);
+function lunacode_display_dust_data_get(string $type, ?string $burn_id = null): array|\WP_Error {
+    return \LunaCode\DisplayDustData\DisplayDustData::get_dust_data($type, $burn_id);
 }
 
 /**
  * Output an entire list of Burn items as HTML
  *
  * @param string $type 'camps'|'art'|'schedule'|'music'
- * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
+ * @param string|null $burn_id The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
  * @param array $options
  * 
  * @return void
  */
-function lunacode_display_dust_data_render(string $type, ?string $event_name = null, array $options = array()): void {
-    $data = lunacode_display_dust_data_get($type, $event_name);
+function lunacode_display_dust_data_render(string $type, ?string $burn_id = null, array $options = array()): void {
+    $data = lunacode_display_dust_data_get($type, $burn_id);
     if (!is_wp_error($data) && !empty($data)) {
         \LunaCode\DisplayDustData\DisplayDustData::render_data($data, $options, $type);
     }
@@ -1431,12 +1431,12 @@ function lunacode_display_dust_data_render(string $type, ?string $event_name = n
  * 
  * TODO give this a collision-proof name
  *
- * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
+ * @param string|null $burn_id The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
  * @param string $text Button text
  * @return string HTML button
  */
-function dust_schedule_ics_button(string $event_name = '', string$text = ''): string {
-    return \LunaCode\DisplayDustData\DisplayDustData::render_ics_button($event_name, $text);
+function dust_schedule_ics_button(string $burn_id = '', string$text = ''): string {
+    return \LunaCode\DisplayDustData\DisplayDustData::render_ics_button($burn_id, $text);
 }
 
 /**
@@ -1444,10 +1444,10 @@ function dust_schedule_ics_button(string $event_name = '', string$text = ''): st
  *
  * TODO give this a collision-proof name
  *
- * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
+ * @param string|null $burn_id The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
  * @param string $text Button text
  * @return string HTML button
  */
-function dust_schedule_csv_button(string $event_name = '', string$text = '') {
-    return \LunaCode\DisplayDustData\DisplayDustData::render_csv_button($event_name, $text);
+function dust_schedule_csv_button(string $burn_id = '', string$text = '') {
+    return \LunaCode\DisplayDustData\DisplayDustData::render_csv_button($burn_id, $text);
 }
