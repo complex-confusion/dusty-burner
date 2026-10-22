@@ -59,7 +59,7 @@ use const HOUR_IN_SECONDS, JSON_ERROR_NONE;
 
 
 /**
- * @phpstan-type-import EventShape from Types
+ * @phpstan-import-type EventShape from Types
  */
 class DisplayDustData {
     const PLUGIN_VERSION = '0.5.2';
