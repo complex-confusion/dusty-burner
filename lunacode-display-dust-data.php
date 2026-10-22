@@ -1186,12 +1186,13 @@ class DisplayDustData {
     }
 
     /**
-     * Return the event's timezone details
+     * Retrieves the event's timezone details
+     * (the timezone ID and its corresponding VTIMEZONE definition)
      * 
-     * TODO get timezone of event by name!
+     * @todo get timezone of event by name!
      *
      * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
-     * @return array
+     * @return array{id: string, vtimezone: string[]} The timezone ID and an array of ICS lines
      */
     private function get_event_timezone(?string $event_name = null): array {
         $wp_timezone = wp_timezone_string();
@@ -1204,10 +1205,11 @@ class DisplayDustData {
     }
 
     /**
-     * Generate VTIMEZONE block for given timezone
+     * Constructs VTIMEZONE block compatible with the iCalendar (RFC 5545) specification for the given timezone.
      *
-     * @param string $timezone_id
-     * @return array
+     * @param string $timezone_id A valid timezone identifier (e.g., 'America/Los_Angeles')
+     * @return string[] An array of ICS lines
+     * @throws \Exception If the DateTimeZone object cannot be initialized.
      */
     private function generate_vtimezone(string $timezone_id) {
         try {
@@ -1275,11 +1277,15 @@ class DisplayDustData {
     }
 
     /**
-     * Parses an API timestamp into the ICS-compliant Ymd\THis format.
+     * Generates ICS-compliant timestamp.
+     * Format to best describe the in-person event.
+     * 
+     * @todo double-check that this produces accurate time. Dust already returns tiemstamps as "Ymd\THis".
+     * @todo separate ICS generation to separate service. Better yet, consider using *spatie/calendar-generator*.
      * 
      * @param string $timestamp The date and time provided by the API.
      * @param string|null $event_name Optional, for timezone resolution. The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
-     * @return string|null The formatted date string or null if parsing fails.
+     * @return string|null The ISO 8601 formatted date string, or null if parsing fails.
      */
     private function parse_dust_time(string $timestamp, $event_name = null): ?string {
         if (isset($event['occurrence']['start_time'])) {
@@ -1321,7 +1327,7 @@ class DisplayDustData {
      * Render CSV export button
      *
      * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
-     * @param ?string $text Button text
+     * @param string|null $text Button text
      * @return string HTML button
      */
     public static function render_csv_button(?string $event_name = '', ?string $text = ''): string {
