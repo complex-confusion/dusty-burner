@@ -1288,6 +1288,7 @@ class DisplayDustData {
                 $dt = new DateTime($timestamp, new DateTimeZone($timezone_info['id']));
                 return $dt->format('Ymd\THis');
             } catch (\Exception $e) {
+                error_log("Display Dust Data error: " . $e->getMessage());
                 return null;
             }
         }
