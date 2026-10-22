@@ -93,16 +93,23 @@ class DisplayDustData {
     public function init(): void {
         // Register custom post types for caching only if needed
         if (is_admin() || wp_doing_ajax()) {
-            $types = array('camp', 'art', 'schedule', 'music');
-            foreach ($types as $type) {
-                register_post_type('dust_' . $type, array(
+            $event_types = [
+                // singular => plural
+                'camp'      => 'camps',
+                'art'       => 'art',
+                'schedule'  => 'schedule',
+                'music'     => 'music',
+            ];
+            foreach ($event_types as $singular_type => $plural_type) {
+                register_post_type('dust_' . $singular_type, array(
                     'labels' => array(
-                        'name' => 'Dust ' . ucfirst($type),
-                        'singular_name' => 'Dust ' . ucfirst($type)
+                        'name' => 'Dust ' . ucfirst($plural_type),
+                        'singular_name' => 'Dust ' . ucfirst($singular_type)
                     ),
                     'public' => false,
                     'show_in_admin' => true,
-                    'supports' => array('title', 'editor', 'thumbnail', 'custom-fields')
+                    'supports' => array('title', 'editor', 'thumbnail', 'custom-fields'),
+                    'capability_type' => array($singular_type, $plural_type),
                 ));
             }
         }
