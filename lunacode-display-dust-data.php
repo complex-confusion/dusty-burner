@@ -249,7 +249,7 @@ class DisplayDustData {
      * @security-ignore CWE-285: No authentication required for public API endpoints
      *
      * @param string $type 'camps'|'art'|'schedule'|'music'
-     * @param string|null $event_name
+     * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
      * @return array|\WP_Error
      */
     public static function get_data($type, $event_name = null): array|\WP_Error {
@@ -1132,7 +1132,7 @@ class DisplayDustData {
 
     /**
      * @param list<EventShape> $events
-     * @param ?string $event_name
+     * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
      * @return string ICS calendar info
      */
     private function generate_schedule_ics(array $events, ?string $event_name): string {
@@ -1190,7 +1190,7 @@ class DisplayDustData {
      * 
      * TODO get timezone of event by name!
      *
-     * @param string|null $event_name
+     * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
      * @return array
      */
     private function get_event_timezone(?string $event_name = null): array {
@@ -1274,7 +1274,7 @@ class DisplayDustData {
         return sprintf('%+03d%02d', $hours, $minutes);
     }
 
-    private function parse_dust_time(array $event, $event_name = null): ?string {
+     * @param string|null $event_name Optional, for timezone resolution. The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
         if (isset($event['occurrence']['start_time'])) {
             try {
                 $timezone_info = $this->get_event_timezone($event_name);
@@ -1307,7 +1307,7 @@ class DisplayDustData {
     /**
      * Render ICS export button
      *
-     * @param string $event_name Event name
+     * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
      * @param string|null $text Button text
      * @return string HTML button
      */
@@ -1325,7 +1325,7 @@ class DisplayDustData {
     /**
      * Render CSV export button
      *
-     * @param ?string $event_name Event name
+     * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
      * @param ?string $text Button text
      * @return string HTML button
      */
@@ -1344,7 +1344,7 @@ class DisplayDustData {
      * Parse export buttons parameter and return HTML for requested buttons
      *
      * @param string $show_export_buttons Parameter value ('true'|'all'|'false')
-     * @param ?string $event_name Event name
+     * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
      * @return string HTML for export buttons
      */
     private static function get_export_buttons(string $show_export_buttons, ?string $event_name = ''): string {
@@ -1386,7 +1386,7 @@ class DisplayDustData {
      * Get data for use in themes/other plugins
      *
      * @param string $type 'camps'|'art'|'schedule'|'music'
-     * @param string|null $event_name
+     * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
      * @return array
      */
     public static function get_dust_data(string $type, ?string $event_name = null): array|\WP_Error {
@@ -1402,7 +1402,7 @@ new DisplayDustData();
 /**
  * For a theme: Get array of Burn items - camps, art, events, or music
  * @param string $type 'camps'|'art'|'schedule'|'music'
- * @param string|null $event_name
+ * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
  * @return array
  */
 function lunacode_display_dust_data_get(string $type, ?string $event_name = null): array|\WP_Error {
@@ -1413,7 +1413,7 @@ function lunacode_display_dust_data_get(string $type, ?string $event_name = null
  * Output an entire list of Burn items as HTML
  *
  * @param string $type 'camps'|'art'|'schedule'|'music'
- * @param ?string $event_name
+ * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
  * @param array $options
  * 
  * @return void
@@ -1430,7 +1430,7 @@ function lunacode_display_dust_data_render(string $type, ?string $event_name = n
  * 
  * TODO give this a collision-proof name
  *
- * @param string $event_name Event name
+ * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
  * @param string $text Button text
  * @return string HTML button
  */
@@ -1443,7 +1443,7 @@ function dust_schedule_ics_button(string $event_name = '', string$text = ''): st
  *
  * TODO give this a collision-proof name
  *
- * @param string $event_name Event name
+ * @param string|null $event_name The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
  * @param string $text Button text
  * @return string HTML button
  */
