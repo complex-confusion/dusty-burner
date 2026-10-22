@@ -1411,7 +1411,7 @@ class DisplayDustData {
     /**
      * Get data for use in themes/other plugins
      *
-     * @param camps'|'art'|'schedule'|'music' $type Type of Dust data
+     * @param 'camps'|'art'|'schedule'|'music' $type Type of Dust data
      * @param string|null $burn_id The Burn's unique ID.
      * @return array|\WP_Error Array of data or WP_Error on failure.
      */
