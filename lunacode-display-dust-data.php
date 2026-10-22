@@ -1161,8 +1161,8 @@ class DisplayDustData {
             }
 
             // Handle time format from Dust API
-            $start_time = $this->parse_dust_time($event, $event_name);
-            $end_time = $this->parse_dust_end_time($event, $event_name);
+            $start_time = $this->parse_dust_time($event['occurrence']['start_time'], $event_name);
+            $end_time = $this->parse_dust_time($event['occurrence']['end_time'], $event_name);
 
             if ($start_time) {
                 $ics .= "DTSTART;TZID=" . $timezone_info['id'] . ":" . $start_time . "\r\n";
@@ -1274,24 +1274,18 @@ class DisplayDustData {
         return sprintf('%+03d%02d', $hours, $minutes);
     }
 
+    /**
+     * Parses an API timestamp into the ICS-compliant Ymd\THis format.
+     * 
+     * @param string $timestamp The date and time provided by the API.
      * @param string|null $event_name Optional, for timezone resolution. The Burn's unique ID. The "Unique Name" you gave your Burn in the Dust app.
+     * @return string|null The formatted date string or null if parsing fails.
+     */
+    private function parse_dust_time(string $timestamp, $event_name = null): ?string {
         if (isset($event['occurrence']['start_time'])) {
             try {
                 $timezone_info = $this->get_event_timezone($event_name);
-                $dt = new DateTime($event['occurrence']['start_time'], new DateTimeZone($timezone_info['id']));
-                return $dt->format('Ymd\THis');
-            } catch (\Exception $e) {
-                return null;
-            }
-        }
-        return null;
-    }
-
-    private function parse_dust_end_time(array $event, ?string $event_name = null): ?string {
-        if (isset($event['occurrence']['end_time'])) {
-            try {
-                $timezone_info = $this->get_event_timezone($event_name);
-                $dt = new DateTime($event['occurrence']['end_time'], new DateTimeZone($timezone_info['id']));
+                $dt = new DateTime($timestamp, new DateTimeZone($timezone_info['id']));
                 return $dt->format('Ymd\THis');
             } catch (\Exception $e) {
                 return null;
