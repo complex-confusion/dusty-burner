@@ -8,6 +8,13 @@ namespace LunaCode\DisplayDustData;
 use Closure;
 use InvalidArgumentException, RuntimeException;
 
+/**
+ * Class CsvGenerator
+ * 
+ * Handles the type-specific formatting of Dust data as CSV content.
+ * 
+ * @phpstan-import-type EventShape from Types
+ */
 class CsvGenerator {
     private Closure $image_url_getter;
 
@@ -20,9 +27,10 @@ class CsvGenerator {
     }
     
     /**
-     * @param list<LunaCode\DisplayDustData\DisplayDustData::EventShape> $list
+     * @param list<EventShape> $list List of Dust data objects; eventually to include models/shapes other than Events.
      * @param 'schedule' $export_type Other types not yet used: `|'camps'|'art'|'music'`
-     * @return string CSV
+     * @return string The contents of a CSV file representing the list of Dust data objects.
+     * @throws RuntimeException if a temporary file cannot be opened for writing.
      */
     public function generate_csv(array $list, string $export_type = 'schedule'): string {
         $mapper = $this->get_mapper($export_type);
@@ -48,9 +56,9 @@ class CsvGenerator {
     /**
      * Factory method to get the appropriate mapper based on export type.
      *
-     * @param string $type
-     * @return CsvMapperInterface
-     * @throws InvalidArgumentException
+     * @param 'schedule' $type Type of Dust data. Ultimately will accept `'camps'|'art'|'schedule'|'music'`
+     * @return CsvMapperInterface Interface for mapping a data item to a CSV row.
+     * @throws InvalidArgumentException if called with an unsupported or unrecognized data type
      */
     private function get_mapper(string $type): CsvMapperInterface {
         return match ($type) {

@@ -6,6 +6,10 @@ namespace LunaCode\DisplayDustData;
 use Closure;
 
 /**
+ * Class ScheduleMapper
+ * 
+ * Provides headers, or methods to map data to CSV columns, specific to a given type of Dust data. 
+ * 
  * @phpstan-import-type EventShape from Types
  */
 class ScheduleMapper implements CsvMapperInterface {
